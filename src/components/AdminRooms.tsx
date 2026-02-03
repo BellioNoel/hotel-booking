@@ -1,5 +1,5 @@
 /**
- * src/components/AdminRoome.tsx
+ * src/components/AdminRooms.tsx
  * Admin rooms: list, add, edit, delete. Images stored as base64.
  */
 import { useState, useEffect, useCallback } from "react";
@@ -9,7 +9,7 @@ import {
   saveRoom,
   deleteRoom,
   generateId,
-} from "../lib/storage";
+} from "../lib/firestoreStorage";
 
 /** Converts File to base64 data URL. */
 function fileToDataUrl(file: File): Promise<string> {
@@ -24,8 +24,7 @@ function fileToDataUrl(file: File): Promise<string> {
 /** Converts multiple files to base64 data URLs. */
 async function filesToDataUrls(files: FileList | null): Promise<string[]> {
   if (!files?.length) return [];
-  const results = await Promise.all(Array.from(files).map(fileToDataUrl));
-  return results;
+  return Promise.all(Array.from(files).map(fileToDataUrl));
 }
 
 const emptyRoomForm = {
@@ -44,8 +43,17 @@ export default function AdminRooms() {
   const [form, setForm] = useState<RoomFormState>(emptyRoomForm);
   const [imageFiles, setImageFiles] = useState<FileList | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const loadRooms = useCallback(() => setRooms(getRooms()), []);
+  const loadRooms = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getRooms();
+      setRooms(data);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     loadRooms();
@@ -79,20 +87,22 @@ export default function AdminRooms() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
     const name = form.name.trim();
     const price = Number(form.price);
     const description = form.description.trim();
+
     if (!name || Number.isNaN(price) || price < 0) return;
 
     let images = [...form.images];
+
     if (imageFiles?.length) {
       const newUrls = await filesToDataUrls(imageFiles);
       images = [...images, ...newUrls];
     }
-    if (images.length === 0) images = []; // allow no images
 
     if (editingRoom) {
-      saveRoom({
+      await saveRoom({
         ...editingRoom,
         name,
         price,
@@ -100,7 +110,7 @@ export default function AdminRooms() {
         images,
       });
     } else {
-      saveRoom({
+      await saveRoom({
         id: generateId(),
         name,
         price,
@@ -108,12 +118,13 @@ export default function AdminRooms() {
         images,
       });
     }
-    loadRooms();
+
+    await loadRooms();
     closeModal();
   }
 
-  function handleDelete(id: string) {
-    deleteRoom(id);
+  async function handleDelete(id: string) {
+    await deleteRoom(id);
     setDeleteConfirmId(null);
     loadRooms();
   }
@@ -136,14 +147,19 @@ export default function AdminRooms() {
         <button
           type="button"
           onClick={openAdd}
-          className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-700"
         >
           + Add room
         </button>
       </div>
 
+      {/* Loading */}
+      {loading && (
+        <p className="text-sm text-gray-500">Loading rooms…</p>
+      )}
+
       {/* Empty state */}
-      {rooms.length === 0 ? (
+      {!loading && rooms.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 py-16 text-center">
           <p className="text-gray-700 font-medium">No rooms yet</p>
           <p className="mt-1 text-sm text-gray-500">
@@ -155,15 +171,14 @@ export default function AdminRooms() {
           {rooms.map((room) => (
             <li
               key={room.id}
-              className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-lg"
+              className="overflow-hidden rounded-2xl border bg-white shadow-sm"
             >
-              {/* Image */}
-              <div className="aspect-4/3 overflow-hidden bg-gray-100">
+              <div className="aspect-4/3 bg-gray-100">
                 {room.images[0] ? (
                   <img
                     src={room.images[0]}
                     alt={room.name}
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="h-full w-full object-cover"
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center text-sm text-gray-400">
@@ -172,11 +187,8 @@ export default function AdminRooms() {
                 )}
               </div>
 
-              {/* Content */}
               <div className="p-5">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {room.name}
-                </h3>
+                <h3 className="text-lg font-semibold">{room.name}</h3>
                 <p className="mt-1 text-sm text-gray-600">
                   ${room.price.toLocaleString()} / night
                 </p>
@@ -184,12 +196,11 @@ export default function AdminRooms() {
                   {room.description}
                 </p>
 
-                {/* Actions */}
-                <div className="mt-5 flex flex-wrap gap-2">
+                <div className="mt-5 flex gap-2">
                   <button
                     type="button"
                     onClick={() => openEdit(room)}
-                    className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="rounded-lg border px-3 py-1.5 text-sm"
                   >
                     Edit
                   </button>
@@ -199,14 +210,14 @@ export default function AdminRooms() {
                       <button
                         type="button"
                         onClick={() => handleDelete(room.id)}
-                        className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
+                        className="rounded-lg bg-red-600 px-3 py-1.5 text-sm text-white"
                       >
                         Confirm
                       </button>
                       <button
                         type="button"
                         onClick={() => setDeleteConfirmId(null)}
-                        className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50"
+                        className="rounded-lg border px-3 py-1.5 text-sm"
                       >
                         Cancel
                       </button>
@@ -215,7 +226,7 @@ export default function AdminRooms() {
                     <button
                       type="button"
                       onClick={() => setDeleteConfirmId(room.id)}
-                      className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                      className="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600"
                     >
                       Delete
                     </button>
@@ -227,126 +238,55 @@ export default function AdminRooms() {
         </ul>
       )}
 
-      {/* Add / Edit modal */}
+      {/* Modal */}
       {isModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-xl">
-            <div className="sticky top-0 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {modalTitle}
-              </h3>
-              <button
-                type="button"
-                onClick={closeModal}
-                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100"
-                aria-label="Close"
-              >
-                ×
-              </button>
-            </div>
-
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white">
             <form onSubmit={handleSubmit} className="space-y-5 p-6">
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Room name
-                </label>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, name: e.target.value }))
-                  }
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-                  required
-                />
-              </div>
+              <h3 className="text-lg font-semibold">{modalTitle}</h3>
 
-              {/* Price */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Price per night
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  value={form.price}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, price: e.target.value }))
-                  }
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-                  required
-                />
-              </div>
+              <input
+                type="text"
+                value={form.name}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, name: e.target.value }))
+                }
+                placeholder="Room name"
+                required
+              />
 
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
-                <textarea
-                  rows={3}
-                  value={form.description}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, description: e.target.value }))
-                  }
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-                />
-              </div>
+              <input
+                type="number"
+                min={0}
+                value={form.price}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, price: e.target.value }))
+                }
+                placeholder="Price per night"
+                required
+              />
 
-              {/* Images */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Images
-                </label>
+              <textarea
+                rows={3}
+                value={form.description}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, description: e.target.value }))
+                }
+                placeholder="Description"
+              />
 
-                {form.images.length > 0 && (
-                  <div className="mb-3 flex flex-wrap gap-2">
-                    {form.images.map((url, i) => (
-                      <div key={i} className="relative">
-                        <img
-                          src={url}
-                          alt=""
-                          className="h-20 w-20 rounded-lg object-cover"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(i)}
-                          className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-600 text-xs text-white hover:bg-red-700"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => setImageFiles(e.target.files)}
+              />
 
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={(e) => setImageFiles(e.target.files)}
-                  className="block w-full text-sm text-gray-600"
-                />
-              </div>
-
-              {/* Actions */}
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="rounded-xl border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
+              <div className="flex justify-end gap-3">
+                <button type="button" onClick={closeModal}>
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className="rounded-xl bg-primary-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-700"
-                >
+                <button type="submit">
                   {editingRoom ? "Save changes" : "Add room"}
                 </button>
               </div>

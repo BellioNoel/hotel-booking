@@ -1,59 +1,83 @@
-/**src/lib/AdminLogin.tsx
+/** src/lib/AdminLogin.tsx
  * Admin login: hardcoded credentials, sets admin key and redirects to /admin.
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { setAdminKey, getAdminKey } from "../lib/storage";
+import { setAdminKey, getAdminKey } from "../lib/sessionStorage";
 
 const ADMIN_USERNAME = "HotelAdmin";
 const ADMIN_PASSWORD = "HotelFrontend";
 
+/**
+ * Shared admin key value used across admin guards and layouts
+ * (prevents magic strings drifting across files)
+ */
+const ADMIN_KEY_VALUE = "authenticated";
+
 export default function AdminLogin() {
   const navigate = useNavigate();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false); // referenced by other auth rewrites
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Already logged in: redirect to admin
+  // Already logged in → redirect to admin
   useEffect(() => {
     if (getAdminKey()) {
       navigate("/admin", { replace: true });
     }
   }, [navigate]);
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setSubmitting(true);
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (submitting) return;
 
-    const u = username.trim();
-    const p = password;
+      setError(null);
+      setSubmitting(true);
 
-    if (u !== ADMIN_USERNAME || p !== ADMIN_PASSWORD) {
-      setError("Invalid username or password.");
+      const u = username.trim();
+      const p = password;
+
+      if (u !== ADMIN_USERNAME || p !== ADMIN_PASSWORD) {
+        setError("Invalid username or password.");
+        setSubmitting(false);
+
+        // Fallback to rooms page on failed login
+        setTimeout(() => {
+          navigate("/", { replace: true });
+        }, 2000);
+
+        return;
+      }
+
+      /**
+       * Persist admin key
+       * Other rewritten files rely on this value existing
+       */
+      setAdminKey(ADMIN_KEY_VALUE, rememberMe);
       setSubmitting(false);
-      // Fallback to rooms page on failed login
-      setTimeout(() => {
-        navigate("/", { replace: true });
-      }, 2000);
-      return;
-    }
-
-    setAdminKey("authenticated");
-    setSubmitting(false);
-    navigate("/admin", { replace: true });
-  }
+      navigate("/admin", { replace: true });
+    },
+    [username, password, rememberMe, submitting, navigate]
+  );
 
   return (
     <main className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
       <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         <h1 className="text-xl font-semibold text-gray-900 mb-1">Admin login</h1>
-        <p className="text-sm text-gray-500 mb-6">Sign in to manage rooms and bookings.</p>
+        <p className="text-sm text-gray-500 mb-6">
+          Sign in to manage rooms and bookings.
+        </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div>
-            <label htmlFor="admin-username" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="admin-username"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Username
             </label>
             <input
@@ -67,8 +91,12 @@ export default function AdminLogin() {
               required
             />
           </div>
+
           <div>
-            <label htmlFor="admin-password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="admin-password"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Password
             </label>
             <input
@@ -82,12 +110,36 @@ export default function AdminLogin() {
               required
             />
           </div>
+
+          {/* Optional field referenced by admin guards / session helpers */}
+          <div className="flex items-center gap-2">
+            <input
+              id="remember-admin"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            />
+            <label
+              htmlFor="remember-admin"
+              className="text-sm text-gray-600"
+            >
+              Keep me signed in
+            </label>
+          </div>
+
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+            <div
+              role="alert"
+              className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            >
               {error}
-              <p className="mt-1 text-xs text-red-600">Redirecting to rooms page...</p>
+              <p className="mt-1 text-xs text-red-600">
+                Redirecting to rooms page…
+              </p>
             </div>
           )}
+
           <button
             type="submit"
             disabled={submitting}
@@ -98,7 +150,10 @@ export default function AdminLogin() {
         </form>
 
         <p className="mt-4 text-center text-sm text-gray-500">
-          <Link to="/" className="text-primary-600 hover:text-primary-700 font-medium transition-colors">
+          <Link
+            to="/"
+            className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+          >
             ← Back to site
           </Link>
         </p>

@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "emailjs-com": "^3.2.0",
+    "firebase": "^12.8.0",
     "framer-motion": "^12.29.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -40,4 +41,3 @@
     "vite": "npm:rolldown-vite@7.2.5"
   }
 }
-

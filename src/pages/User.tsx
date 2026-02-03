@@ -1,9 +1,9 @@
-/** src/lib/User.tsx
+/**
  * User-facing page: browse rooms, select dates, book rooms.
  * Enhanced UI/UX: animations, transitions, hover effects, color shifts.
  */
 import { useState, useEffect, useCallback } from "react";
-import { getRooms } from "../lib/storage";
+import { getRooms } from "../lib/firestoreStorage";
 import type { Room, RoomId } from "../types";
 import RoomCard from "../components/RoomCard";
 import BookingForm from "../components/BookingForm";
@@ -51,7 +51,10 @@ export default function User() {
   const [bookingRoomIds, setBookingRoomIds] = useState<RoomId[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const loadRooms = useCallback(() => setRooms(getRooms()), []);
+  const loadRooms = useCallback(async () => {
+    const data = await getRooms();
+    setRooms(data);
+  }, []);
 
   useEffect(() => {
     loadRooms();
@@ -109,14 +112,17 @@ export default function User() {
         {rooms.length === 0 ? (
           <div className="mt-8 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/50 py-16 text-center animate-fadeIn">
             <p className="text-gray-600 font-medium">No rooms available yet.</p>
-            <p className="mt-1 text-sm text-gray-500">Check back later or contact the hotel.</p>
+            <p className="mt-1 text-sm text-gray-500">
+              Check back later or contact the hotel.
+            </p>
           </div>
         ) : (
           <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {rooms.map((room) => (
+            {rooms.map((room, index) => (
               <li
                 key={room.id}
-                className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-transform duration-500 hover:scale-[1.02] hover:shadow-lg animate-slideUp delay-[${index * 100}ms]"
+                className={`group relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-transform duration-500 hover:scale-[1.02] hover:shadow-lg animate-slideUp`}
+                style={{ animationDelay: `${index * 100}ms` }}
               >
                 <RoomCard room={room} onBook={handleBook} />
               </li>

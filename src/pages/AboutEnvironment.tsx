@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../lib/firebase";
 
-const STORAGE_KEY = "hotel_about_page";
+const ABOUT_DOC_REF = doc(db, "config", "aboutPage");
 
 interface AboutCard {
   id: string;
@@ -19,8 +21,12 @@ export default function AboutPage() {
   const [data, setData] = useState<AboutPageData | null>(null);
 
   useEffect(() => {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) setData(JSON.parse(raw));
+    (async () => {
+      const snap = await getDoc(ABOUT_DOC_REF);
+      if (snap.exists()) {
+        setData(snap.data() as AboutPageData);
+      }
+    })();
   }, []);
 
   if (!data) return null;
@@ -28,7 +34,6 @@ export default function AboutPage() {
   return (
     <main className="bg-slate-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
-
         {/* HERO CARD */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -81,7 +86,6 @@ export default function AboutPage() {
             </motion.div>
           ))}
         </div>
-
       </div>
     </main>
   );

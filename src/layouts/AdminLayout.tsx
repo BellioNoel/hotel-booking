@@ -3,7 +3,7 @@
  * Redirects to /admin/login when no admin key is stored.
  */
 import { Outlet, Navigate, Link, useNavigate } from "react-router-dom";
-import { getAdminKey, clearAdminKey } from "../lib/storage";
+import { getAdminKey, clearAdminKey } from "../lib/sessionStorage";
 
 export default function AdminLayout() {
   const navigate = useNavigate();

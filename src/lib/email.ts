@@ -1,3 +1,4 @@
+//src/lib/email.ts
 import emailjs from "emailjs-com";
 import type { Booking } from "../types";
 

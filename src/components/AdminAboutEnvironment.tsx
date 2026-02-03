@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "../lib/firebase";
 
-const STORAGE_KEY = "hotel_about_page";
+const ABOUT_DOC_REF = doc(db, "config", "aboutPage");
 
 interface AboutCard {
   id: string;
@@ -28,13 +30,17 @@ export default function AdminAboutPage() {
   });
 
   useEffect(() => {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) setData(JSON.parse(raw));
+    (async () => {
+      const snap = await getDoc(ABOUT_DOC_REF);
+      if (snap.exists()) {
+        setData(snap.data() as AboutPageData);
+      }
+    })();
   }, []);
 
-  function save(updated: AboutPageData) {
+  async function save(updated: AboutPageData) {
     setData(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    await setDoc(ABOUT_DOC_REF, updated);
   }
 
   async function fileToBase64(file: File) {
@@ -52,7 +58,9 @@ export default function AdminAboutPage() {
   function updateCard(id: string, field: keyof AboutCard, value: string) {
     save({
       ...data,
-      cards: data.cards.map((c) => (c.id === id ? { ...c, [field]: value } : c)),
+      cards: data.cards.map((c) =>
+        c.id === id ? { ...c, [field]: value } : c
+      ),
     });
   }
 
@@ -88,7 +96,10 @@ export default function AdminAboutPage() {
         />
 
         {data.hero.image && (
-          <img src={data.hero.image} className="mt-4 rounded-lg h-40 object-cover" />
+          <img
+            src={data.hero.image}
+            className="mt-4 rounded-lg h-40 object-cover"
+          />
         )}
       </div>
 
@@ -107,7 +118,9 @@ export default function AdminAboutPage() {
               className="w-full border p-2 rounded mb-2"
               placeholder="Card description"
               value={card.description}
-              onChange={(e) => updateCard(card.id, "description", e.target.value)}
+              onChange={(e) =>
+                updateCard(card.id, "description", e.target.value)
+              }
             />
 
             <input
@@ -119,10 +132,20 @@ export default function AdminAboutPage() {
               }}
             />
 
-            {card.image && <img src={card.image} className="mt-4 h-32 rounded object-cover" />}
+            {card.image && (
+              <img
+                src={card.image}
+                className="mt-4 h-32 rounded object-cover"
+              />
+            )}
 
             <button
-              onClick={() => save({ ...data, cards: data.cards.filter((c) => c.id !== card.id) })}
+              onClick={() =>
+                save({
+                  ...data,
+                  cards: data.cards.filter((c) => c.id !== card.id),
+                })
+              }
               className="mt-3 text-red-600 text-sm"
             >
               Delete Card
