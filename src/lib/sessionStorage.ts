@@ -37,7 +37,7 @@ export function clearSession(): void {
 
 const ADMIN_KEY_STORAGE = "hotel-booking:admin";
 
-export function setAdminKey(key: AdminKey, rememberMe: boolean): void {
+export function setAdminKey(key: AdminKey, _rememberMe: boolean): void {
   sessionStorage.setItem(ADMIN_KEY_STORAGE, key);
 }
 

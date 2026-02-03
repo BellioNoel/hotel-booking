@@ -128,13 +128,13 @@ export default function AdminRooms() {
     setDeleteConfirmId(null);
     loadRooms();
   }
-
+/*
   function removeImage(index: number) {
     setForm((prev) => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index),
     }));
-  }
+  }*/
 
   const isModalOpen = isAddOpen || editingRoom !== null;
   const modalTitle = editingRoom ? "Edit room" : "Add room";
