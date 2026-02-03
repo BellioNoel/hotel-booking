@@ -1,148 +1,293 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import type { Booking, Room } from "../types";
-import {
-  getBookings,
-  saveBooking,
-  getRooms,
-} from "../lib/firestoreStorage";
+import { getBookings, saveBooking, getRooms } from "../lib/firestoreStorage";
 import { sendBookingStatusEmail } from "../lib/email";
+import { Mail, CalendarCheck, XCircle, BookOpen } from "lucide-react";
+
+type SortMode = "recent" | "oldest";
+type StatusFilter = "all" | "pending" | "accepted" | "rejected";
 
 export default function AdminBookings() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [, setActingId] = useState<string | null>(null);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const [sort, setSort] = useState<SortMode>("recent");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
+  const [emailSentCount, setEmailSentCount] = useState(0);
+
+  const [proposedCheckIn, setProposedCheckIn] = useState("");
   const [rejecting, setRejecting] = useState<Booking | null>(null);
   const [rejectReason, setRejectReason] = useState("");
 
+  // ---------- Load ----------
   const loadData = useCallback(async () => {
-    const [b, r] = await Promise.all([
-      getBookings(),
-      getRooms(),
-    ]);
+    setLoading(true);
+    const [b, r] = await Promise.all([getBookings(), getRooms()]);
     setBookings(b);
     setRooms(r);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
+  // ---------- Helpers ----------
   const getRoomById = useCallback(
-    (id: string) => rooms.find((r) => r.id === id) ?? null,
+    (id: string) => rooms.find((r) => r.id === id),
     [rooms]
   );
 
-  // ---------- Helpers ----------
-  const bookingNights = useCallback((booking: Booking) => {
-    const cin = new Date(booking.checkIn);
-    const cout = new Date(booking.checkOut);
-    const diff = cout.getTime() - cin.getTime();
-    return diff > 0 ? diff / (1000 * 60 * 60 * 24) : 0;
-  }, []);
-
-  const bookingTotal = useCallback(
-    (booking: Booking) =>
-      booking.roomIds.reduce((sum, id) => {
-        const room = getRoomById(id);
-        return sum + (room?.price || 0) * bookingNights(booking);
-      }, 0),
-    [bookingNights, getRoomById]
-  );
-
-  const isRoomAvailable = useCallback(
-    (booking: Booking) => {
-      return !bookings.some((b) => {
-        if (b.id === booking.id || b.status !== "accepted") return false;
-
-        const cin = new Date(booking.checkIn);
-        const cout = new Date(booking.checkOut);
-        const bCin = new Date(b.checkIn);
-        const bCout = new Date(b.checkOut);
-
-        return booking.roomIds.some(
-          (rid) => b.roomIds.includes(rid) && cin < bCout && cout > bCin
-        );
-      });
-    },
-    [bookings]
-  );
-
-  // ---------- Actions ----------
-  async function handleAccept(booking: Booking) {
-    setActingId(booking.id);
-
-    const updated: Booking = { ...booking, status: "accepted" };
-    await saveBooking(updated);
-    await loadData();
-
-    const total = bookingTotal(booking);
-
-    const subject = "Your booking is approved!";
-    const body = `Dear ${booking.guestName},
-
-Your request for room(s) "${booking.roomIds
-      .map((id) => getRoomById(id)?.name ?? id)
-      .join(", ")}" in our hotel "SUPER-STAR HIGH RANK HOTEL" has been APPROVED.
-
-The room(s) are preserved for you from ${booking.checkIn} to ${booking.checkOut}.
-Make your payment of $${total.toLocaleString()} on arrival.
-
-Best Regards,
-SUPER-STAR, THE PLACE OF PEACE.`;
-
-    const result = await sendBookingStatusEmail(booking, "accepted", subject, body);
-
-    setActingId(null);
-    setMessage(
-      result.success
-        ? { type: "success", text: "Booking accepted. Email sent to guest." }
-        : { type: "error", text: `Booking accepted, but email failed: ${result.error}` }
-    );
-    setTimeout(() => setMessage(null), 5000);
+  function overlaps(a: Booking, b: Booking) {
+    const aIn = new Date(a.checkIn);
+    const aOut = new Date(a.checkOut);
+    const bIn = new Date(b.checkIn);
+    const bOut = new Date(b.checkOut);
+    return aIn < bOut && aOut > bIn;
   }
 
-  async function handleRejectSubmit() {
-    if (!rejecting) return;
+  function conflicts(booking: Booking) {
+    return bookings.filter(
+      (b) =>
+        b.id !== booking.id &&
+        b.status === "accepted" &&
+        overlaps(booking, b) &&
+        booking.roomIds.some((id) => b.roomIds.includes(id))
+    );
+  }
 
-    setActingId(rejecting.id);
+  const bookingTotal = useCallback(
+    (b: Booking) =>
+      b.roomIds.reduce((sum, id) => {
+        const room = getRoomById(id);
+        if (!room) return sum;
+        const nights =
+          (new Date(b.checkOut).getTime() -
+            new Date(b.checkIn).getTime()) /
+          (1000 * 60 * 60 * 24);
+        return sum + room.price * Math.max(0, nights);
+      }, 0),
+    [getRoomById]
+  );
 
-    const updated: Booking = { ...rejecting, status: "rejected" };
+  // ---------- Accept ----------
+  async function handleAccept(b: Booking) {
+    const updated: Booking = {
+      ...b,
+      status: "accepted",
+      checkIn: proposedCheckIn || b.checkIn,
+    };
+
     await saveBooking(updated);
     await loadData();
 
-    const subject = "Your booking request";
-    const body = `Dear ${rejecting.guestName},
+    const subject = "Booking Approved";
+    const body = `Dear ${b.guestName},
 
-We regret to inform you that your booking could not be accommodated.
+Your booking has been APPROVED.
+
+Rooms:
+${b.roomIds.map((id) => getRoomById(id)?.name ?? id).join(", ")}
+
+Check-in: ${updated.checkIn}
+Check-out: ${b.checkOut}
+
+Total payable on arrival: $${bookingTotal(b).toLocaleString()}
+
+Best Regards,
+SUPER-STAR HOTEL`;
+
+    const result = await sendBookingStatusEmail(
+      b,
+      "accepted",
+      subject,
+      body
+    );
+
+    if (result.success) setEmailSentCount((c) => c + 1);
+    setProposedCheckIn("");
+  }
+
+  // ---------- Reject ----------
+  async function handleReject() {
+    if (!rejecting) return;
+
+    await saveBooking({ ...rejecting, status: "rejected" });
+    await loadData();
+
+    const result = await sendBookingStatusEmail(
+      rejecting,
+      "rejected",
+      "Booking Rejected",
+      `Dear ${rejecting.guestName},
 
 ${rejectReason}
 
-Best Regards,
-SUPER-STAR, THE PLACE OF PEACE.`;
+Regards,
+SUPER-STAR HOTEL`
+    );
 
-    const result = await sendBookingStatusEmail(rejecting, "rejected", subject, body);
-
-    setActingId(null);
+    if (result.success) setEmailSentCount((c) => c + 1);
     setRejecting(null);
     setRejectReason("");
-
-    setMessage(
-      result.success
-        ? { type: "success", text: "Booking rejected. Email sent to guest." }
-        : { type: "error", text: `Booking rejected, but email failed: ${result.error}` }
-    );
-    setTimeout(() => setMessage(null), 5000);
   }
 
   // ---------- Derived ----------
-  const pending = useMemo(() => bookings.filter((b) => b.status === "pending"), [bookings]);
-  const other = useMemo(() => bookings.filter((b) => b.status !== "pending"), [bookings]);
+  const filtered = useMemo(() => {
+    let list = [...bookings];
 
+    if (statusFilter !== "all") {
+      list = list.filter((b) => b.status === statusFilter);
+    }
+
+    list.sort((a, b) =>
+      sort === "recent"
+        ? b.createdAt.localeCompare(a.createdAt)
+        : a.createdAt.localeCompare(b.createdAt)
+    );
+
+    return list;
+  }, [bookings, sort, statusFilter]);
+
+  const stats = useMemo(() => {
+    return {
+      total: bookings.length,
+      accepted: bookings.filter((b) => b.status === "accepted").length,
+      rejected: bookings.filter((b) => b.status === "rejected").length,
+    };
+  }, [bookings]);
+
+  // ---------- UI ----------
   return (
-    <section className="space-y-6 p-4 max-w-5xl mx-auto">
-      <h2 className="text-xl font-semibold">Bookings</h2>
-      {/* UI unchanged */}
+    <section className="max-w-6xl mx-auto p-6 space-y-6">
+      <h2 className="text-2xl font-semibold">Admin Bookings</h2>
+
+      {/* Stats */}
+      <div className="grid grid-cols-4 gap-4">
+        <Stat icon={<BookOpen />} label="Total" value={stats.total} />
+        <Stat icon={<CalendarCheck />} label="Accepted" value={stats.accepted} />
+        <Stat icon={<XCircle />} label="Rejected" value={stats.rejected} />
+        <Stat icon={<Mail />} label="Emails Sent" value={emailSentCount} />
+      </div>
+
+      {/* Filters */}
+      <div className="flex gap-4">
+        <select onChange={(e) => setSort(e.target.value as SortMode)}>
+          <option value="recent">Most recent</option>
+          <option value="oldest">Oldest</option>
+        </select>
+
+        <select onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}>
+          <option value="all">All</option>
+          <option value="pending">Pending</option>
+          <option value="accepted">Accepted</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+
+      {loading && <p>Loading bookings…</p>}
+
+      {/* Bookings */}
+      <div className="space-y-4">
+        {filtered.map((b) => {
+          const conflict = conflicts(b);
+
+          return (
+            <div key={b.id} className="rounded-lg border p-4 space-y-2">
+              <div className="flex justify-between">
+                <div className="font-semibold">{b.guestName}</div>
+                <span className="text-sm uppercase">{b.status}</span>
+              </div>
+
+              <div className="text-sm">{b.guestEmail}</div>
+              <div className="text-sm">
+                {b.checkIn} → {b.checkOut}
+              </div>
+              <div className="text-sm">
+                Rooms: {b.roomIds.map((id) => getRoomById(id)?.name).join(", ")}
+              </div>
+              <div className="font-medium">
+                Total: ${bookingTotal(b).toLocaleString()}
+              </div>
+
+              {conflict.length > 0 && (
+                <div className="rounded bg-red-50 p-2 text-sm text-red-700">
+                  Room already booked by{" "}
+                  <strong>{conflict[0].guestName}</strong>
+                </div>
+              )}
+
+              {b.status === "pending" && (
+                <div className="flex flex-col gap-2 pt-2">
+                  {conflict.length > 0 && (
+                    <input
+                      type="date"
+                      value={proposedCheckIn}
+                      onChange={(e) => setProposedCheckIn(e.target.value)}
+                      placeholder="Propose new check-in"
+                    />
+                  )}
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleAccept(b)}
+                      className="bg-green-600 text-white px-3 py-1 rounded"
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => setRejecting(b)}
+                      className="bg-red-600 text-white px-3 py-1 rounded"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Reject modal */}
+      {rejecting && (
+        <div className="border p-4 rounded space-y-2">
+          <textarea
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            placeholder="Rejection reason"
+            className="w-full border rounded p-2"
+          />
+          <button
+            onClick={handleReject}
+            className="bg-red-600 text-white px-3 py-1 rounded"
+          >
+            Confirm Reject
+          </button>
+        </div>
+      )}
     </section>
+  );
+}
+
+function Stat({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="rounded border p-4 flex items-center gap-3">
+      <div className="text-gray-600">{icon}</div>
+      <div>
+        <div className="text-sm text-gray-500">{label}</div>
+        <div className="font-semibold">{value}</div>
+      </div>
+    </div>
   );
 }
