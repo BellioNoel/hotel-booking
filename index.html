@@ -1,11 +1,78 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- Basic -->
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>hotel-booking</title>
+
+    <!-- Title -->
+    <title>Franco Hotel | Your Home Away From Home | Bonaberi</title>
+
+    <!-- Primary SEO -->
+    <meta
+      name="description"
+      content="Franco Hotel in Bonaberi offers comfortable rooms, beautiful gardens, swimming pools, and exceptional hospitality. Located near Ancient SONEL beside the 19th police district. Your home away from home."
+    />
+    <meta
+      name="keywords"
+      content="Franco Hotel, hotel in Bonaberi, Bonaberi hotels, hotel near Ancient SONEL, hotel near 19th police district, affordable hotel in Douala, luxury hotel Bonaberi, Franco Hotel Cameroon"
+    />
+    <meta name="author" content="Franco Hotel" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://franco-hotel.vercel.app/" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Franco Hotel | Your Home Away From Home" />
+    <meta
+      property="og:description"
+      content="Experience comfort, elegance, and exceptional service at Franco Hotel in Bonaberi. Swimming pools, gardens, and peaceful stays await you."
+    />
+    <meta property="og:url" content="https://franco-hotel.vercel.app/" />
+    <meta property="og:site_name" content="Franco Hotel" />
+    <meta property="og:image" content="/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Franco Hotel - Your Home Away From Home" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Franco Hotel | Your Home Away From Home" />
+    <meta
+      name="twitter:description"
+      content="A premium hotel in Bonaberi offering comfort, relaxation, and excellent service. Book your stay at Franco Hotel today."
+    />
+    <meta name="twitter:image" content="/og-image.jpg" />
+
+    <!-- Local Business / Hotel Schema -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Hotel",
+        "name": "Franco Hotel",
+        "description": "Franco Hotel in Bonaberi offers elegant rooms, swimming pools, gardens, and unmatched hospitality.",
+        "url": "https://franco-hotel.vercel.app/",
+        "telephone": "+237678507737",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Ancient SONEL, beside the 19th police district",
+          "addressLocality": "Bonaberi",
+          "addressRegion": "Douala",
+          "addressCountry": "CM"
+        }
+      }
+    </script>
+
+    <!-- Theme color -->
+    <meta name="theme-color" content="#2563eb" />
   </head>
+
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
