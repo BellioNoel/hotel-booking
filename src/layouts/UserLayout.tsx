@@ -13,7 +13,7 @@ export default function UserLayout() {
             to="/"
             className="text-xl font-semibold text-primary-600 hover:text-primary-700 transition-colors"
           >
-            SUPER-STAR HIGH RANK HOTEL
+            FRANCO HOTEL
           </Link>
 
           <nav className="flex items-center gap-3 sm:gap-4">
