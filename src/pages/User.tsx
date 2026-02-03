@@ -1,13 +1,14 @@
 /**
  * User-facing page: browse rooms, select dates, book rooms.
- * Enhanced UI/UX: animations, transitions, hover effects, color shifts.
+ * Compact hero with single-slot animated slogan.
  */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { getRooms } from "../lib/firestoreStorage";
 import type { Room, RoomId } from "../types";
 import RoomCard from "../components/RoomCard";
 import BookingForm from "../components/BookingForm";
 
+/* ---------------- MODAL OVERLAY ---------------- */
 function BookingModalOverlay({
   onClose,
   titleId,
@@ -18,39 +19,94 @@ function BookingModalOverlay({
   children: React.ReactNode;
 }) {
   useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
+    const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
   }, [onClose]);
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
     >
       <button
-        type="button"
         className="absolute inset-0 cursor-default"
         aria-label="Close modal"
         onClick={onClose}
       />
-      <div className="relative z-10 w-full max-w-lg animate-pop">
-        {children}
-      </div>
+      <div className="relative z-10 w-full max-w-lg">{children}</div>
     </div>
   );
 }
 
+/* ---------------- MAIN PAGE ---------------- */
 export default function User() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [bookingRoomIds, setBookingRoomIds] = useState<RoomId[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  /* ---------- HERO CONTENT ---------- */
+  const slogans = useMemo(
+    () => [
+      "Find your perfect stay",
+      "Comfort that feels like home",
+      "Relax. Recharge. Rest easy.",
+      "Where comfort meets convenience",
+      "Your ideal room awaits",
+      "Stay smart. Stay comfortable.",
+      "Peaceful stays near the city",
+      "Simple stays, real comfort",
+      "Book comfort in minutes",
+      "Rest better, travel smarter",
+      "A calm stay starts here",
+    ],
+    []
+  );
+
+  const descriptions = useMemo(
+    () => [
+      "Located in Bonaberi, just 100 meters from the main road.",
+      "Find us at Ancient SONEL, beside the 19th Police District.",
+      "Perfectly positioned in Bonaberi for easy access.",
+      "Only 100 meters from the street — easy to locate.",
+      "Call 678507737 for directions or assistance.",
+    ],
+    []
+  );
+
+  const sloganColors = [
+    "text-blue-700",
+    "text-sky-600",
+    "text-blue-600",
+    "text-sky-500",
+  ];
+
+  const [index, setIndex] = useState(0);
+  const [phase, setPhase] = useState<"enter" | "exit">("enter");
+
+  /* ---------- STRICT SINGLE-SLOT ROTATION ---------- */
+  useEffect(() => {
+    const exitTimer = setTimeout(() => {
+      setPhase("exit");
+    }, 1800);
+
+    const switchTimer = setTimeout(() => {
+      setIndex((i) => (i + 1) % slogans.length);
+      setPhase("enter");
+    }, 2300);
+
+    return () => {
+      clearTimeout(exitTimer);
+      clearTimeout(switchTimer);
+    };
+  }, [index, slogans.length]);
+
+  /* ---------- DATA ---------- */
   const loadRooms = useCallback(async () => {
     const data = await getRooms();
     setRooms(data);
@@ -60,6 +116,7 @@ export default function User() {
     loadRooms();
   }, [loadRooms]);
 
+  /* ---------- ACTIONS ---------- */
   function handleBook(room: Room) {
     setBookingRoomIds([room.id]);
     setBookingModalOpen(true);
@@ -68,7 +125,7 @@ export default function User() {
   function handleBookingSuccess() {
     setBookingModalOpen(false);
     setBookingRoomIds([]);
-    setSuccessMessage("Booking submitted! We'll confirm by email soon.");
+    setSuccessMessage("Booking submitted! We’ll confirm by email shortly.");
     setTimeout(() => setSuccessMessage(null), 6000);
   }
 
@@ -77,52 +134,63 @@ export default function User() {
     setBookingRoomIds([]);
   }
 
+  /* ---------- RENDER ---------- */
   return (
-    <main className="min-h-screen bg-linear-to-b from-gray-50 to-white transition-colors duration-700">
-      {/* HERO */}
-      <section className="relative overflow-hidden border-b border-gray-200/60 bg-linear-to-br from-primary-50 via-white to-gray-50 px-4 py-12 sm:px-6 sm:py-16 md:py-20">
-        <div className="mx-auto max-w-6xl text-center space-y-4">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-gray-900 animate-slideDown">
-            Find your perfect stay
+    <main className="min-h-screen bg-linear-to-b from-sky-50 to-white">
+      {/* HERO (COMPACT) */}
+      <section className="border-b border-blue-100 bg-white px-4 py-8 text-center">
+        {/* Fixed compact height */}
+        <div className="relative h-10.5 sm:h-12">
+          <h1
+            key={index}
+            className={`
+              absolute inset-0 flex items-center justify-center
+              text-xl sm:text-2xl md:text-3xl font-bold tracking-tight
+              transition-all duration-500 ease-in-out
+              ${sloganColors[index % sloganColors.length]}
+              ${
+                phase === "enter"
+                  ? "opacity-100 translate-y-0 scale-100"
+                  : "opacity-0 -translate-y-3 scale-95"
+              }
+            `}
+          >
+            {slogans[index]}
           </h1>
-          <p className="mt-2 max-w-2xl mx-auto text-base sm:text-lg text-gray-600 animate-slideUp delay-200">
-            Browse rooms and book in a few clicks. We’ll confirm your reservation by email.
-          </p>
         </div>
+
+        {/* Location text — BLACK ONLY */}
+        <p className="mt-2 max-w-2xl mx-auto text-sm sm:text-base text-black">
+          {descriptions[index % descriptions.length]}
+        </p>
       </section>
 
-      {/* Success message */}
+      {/* SUCCESS MESSAGE */}
       {successMessage && (
-        <div
-          role="alert"
-          className="mx-auto max-w-6xl px-4 py-4 sm:px-6 animate-fadeInDown"
-        >
-          <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800 shadow-sm transition-colors hover:bg-green-100">
+        <div className="mx-auto max-w-6xl px-4 py-3">
+          <div className="rounded-lg border border-blue-200 bg-sky-50 px-4 py-2 text-blue-800 animate-slideDown">
             {successMessage}
           </div>
         </div>
       )}
 
-      {/* Rooms grid */}
-      <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
-        <h2 className="text-xl font-semibold text-gray-900 sm:text-2xl mb-6 animate-slideDown">
+      {/* ROOMS */}
+      <section className="mx-auto max-w-6xl px-4 py-8">
+        <h2 className="mb-4 text-xl sm:text-2xl font-semibold text-blue-900">
           Our Rooms
         </h2>
 
         {rooms.length === 0 ? (
-          <div className="mt-8 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/50 py-16 text-center animate-fadeIn">
-            <p className="text-gray-600 font-medium">No rooms available yet.</p>
-            <p className="mt-1 text-sm text-gray-500">
-              Check back later or contact the hotel.
-            </p>
+          <div className="rounded-xl border-2 border-dashed border-blue-200 py-12 text-center">
+            <p className="text-blue-600">No rooms available yet.</p>
           </div>
         ) : (
-          <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {rooms.map((room, index) => (
+          <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {rooms.map((room, i) => (
               <li
                 key={room.id}
-                className={`group relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-transform duration-500 hover:scale-[1.02] hover:shadow-lg animate-slideUp`}
-                style={{ animationDelay: `${index * 100}ms` }}
+                className="rounded-2xl border border-blue-100 bg-white shadow-sm transition-transform hover:scale-[1.02]"
+                style={{ animationDelay: `${i * 80}ms` }}
               >
                 <RoomCard room={room} onBook={handleBook} />
               </li>
@@ -131,30 +199,28 @@ export default function User() {
         )}
       </section>
 
-      {/* Booking modal */}
+      {/* BOOKING MODAL */}
       {bookingModalOpen && (
         <BookingModalOverlay
           onClose={handleBookingCancel}
           titleId="booking-modal-title"
         >
-          <div className="max-h-[90vh] overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl animate-pop">
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
+          <div className="rounded-2xl bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b px-6 py-4">
               <h2
                 id="booking-modal-title"
-                className="text-lg font-semibold text-gray-900 animate-slideDown"
+                className="font-semibold text-blue-900"
               >
                 Complete your booking
               </h2>
               <button
-                type="button"
                 onClick={handleBookingCancel}
-                className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                aria-label="Close"
+                className="text-xl text-blue-600"
               >
-                <span className="text-xl leading-none">×</span>
+                ×
               </button>
             </div>
-            <div className="p-6 animate-fadeInUp">
+            <div className="p-6">
               <BookingForm
                 roomIds={bookingRoomIds}
                 allRooms={rooms}

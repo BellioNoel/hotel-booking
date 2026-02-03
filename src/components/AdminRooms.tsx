@@ -190,7 +190,7 @@ export default function AdminRooms() {
               <div className="p-5">
                 <h3 className="text-lg font-semibold">{room.name}</h3>
                 <p className="mt-1 text-sm text-gray-600">
-                  ${room.price.toLocaleString()} / night
+                  FCFA{room.price.toLocaleString()} / night
                 </p>
                 <p className="mt-2 line-clamp-2 text-sm text-gray-500">
                   {room.description}

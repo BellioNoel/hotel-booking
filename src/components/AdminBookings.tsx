@@ -97,7 +97,7 @@ Check-out: ${b.checkOut}
 Total payable on arrival: $${bookingTotal(b).toLocaleString()}
 
 Best Regards,
-SUPER-STAR HOTEL`;
+FRANCO HOTEL`;
 
     const result = await sendBookingStatusEmail(
       b,
@@ -209,7 +209,7 @@ SUPER-STAR HOTEL`
                 Rooms: {b.roomIds.map((id) => getRoomById(id)?.name).join(", ")}
               </div>
               <div className="font-medium">
-                Total: ${bookingTotal(b).toLocaleString()}
+                Total: FCFA{bookingTotal(b).toLocaleString()}
               </div>
 
               {conflict.length > 0 && (
