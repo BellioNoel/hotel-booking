@@ -12,13 +12,20 @@ export type BookingId = string;
 /** Admin secret key stored in session/local storage; used to gate admin routes. */
 export type AdminKey = string;
 
-/** Room entity: name, price, description, images (base64). */
+/**
+ * Room entity: name, price, description, images.
+ * Images are stored as URLs (Cloudinary), not base64.
+ */
 export interface Room {
   id: RoomId;
   name: string;
   price: number;
   description: string;
-  /** Image data URLs (base64) for display and storage. */
+
+  /**
+   * Image URLs for display and storage.
+   * Currently backed by Cloudinary secure URLs.
+   */
   images: string[];
 }
 

@@ -1,3 +1,4 @@
+//src/pages/AboutEnvironment.tsx
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { doc, getDoc } from "firebase/firestore";

@@ -8,7 +8,7 @@ interface AboutCard {
   id: string;
   title: string;
   description: string;
-  image: string;
+  image: string; // URL (Cloudinary)
 }
 
 interface AboutPageData {
@@ -23,7 +23,11 @@ const emptyCard = (): AboutCard => ({
   image: "",
 });
 
-export default function AdminAboutPage() {
+const CLOUDINARY_UPLOAD_URL =
+  "https://api.cloudinary.com/v1_1/ddl2f55by/image/upload";
+const CLOUDINARY_UPLOAD_PRESET = "hotel_uploads";
+
+export default function AdminAboutEnvironment() {
   const [data, setData] = useState<AboutPageData>({
     hero: emptyCard(),
     cards: [],
@@ -43,11 +47,42 @@ export default function AdminAboutPage() {
     await setDoc(ABOUT_DOC_REF, updated);
   }
 
-  async function fileToBase64(file: File) {
-    return new Promise<string>((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.readAsDataURL(file);
+  /** Upload image to Cloudinary and return secure URL */
+  async function uploadImage(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+    const res = await fetch(CLOUDINARY_UPLOAD_URL, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) {
+      throw new Error("Cloudinary upload failed");
+    }
+
+    const data = await res.json();
+    return data.secure_url as string;
+  }
+
+  async function updateHeroImage(file: File) {
+    const url = await uploadImage(file);
+
+    save({
+      ...data,
+      hero: { ...data.hero, image: url },
+    });
+  }
+
+  async function updateCardImage(cardId: string, file: File) {
+    const url = await uploadImage(file);
+
+    save({
+      ...data,
+      cards: data.cards.map((c) =>
+        c.id === cardId ? { ...c, image: url } : c
+      ),
     });
   }
 
@@ -68,9 +103,9 @@ export default function AdminAboutPage() {
     <div className="max-w-6xl mx-auto p-6 space-y-8">
       <h1 className="text-3xl font-bold">Hotel About Page Builder</h1>
 
-      {/* HERO CARD */}
+      {/* HERO */}
       <div className="bg-white rounded-xl p-6 shadow">
-        <h2 className="font-semibold mb-4">Hero Card (Hotel Name)</h2>
+        <h2 className="font-semibold mb-4">Hero Section</h2>
 
         <input
           className="w-full border p-2 rounded mb-2"
@@ -89,16 +124,17 @@ export default function AdminAboutPage() {
         <input
           type="file"
           accept="image/*"
-          onChange={async (e) => {
-            if (!e.target.files) return;
-            updateHero("image", await fileToBase64(e.target.files[0]));
+          onChange={(e) => {
+            if (e.target.files?.[0]) {
+              updateHeroImage(e.target.files[0]);
+            }
           }}
         />
 
         {data.hero.image && (
           <img
             src={data.hero.image}
-            className="mt-4 rounded-lg h-40 object-cover"
+            className="mt-4 h-40 rounded-lg object-cover"
           />
         )}
       </div>
@@ -111,7 +147,9 @@ export default function AdminAboutPage() {
               className="w-full border p-2 rounded mb-2"
               placeholder="Card title"
               value={card.title}
-              onChange={(e) => updateCard(card.id, "title", e.target.value)}
+              onChange={(e) =>
+                updateCard(card.id, "title", e.target.value)
+              }
             />
 
             <textarea
@@ -126,9 +164,10 @@ export default function AdminAboutPage() {
             <input
               type="file"
               accept="image/*"
-              onChange={async (e) => {
-                if (!e.target.files) return;
-                updateCard(card.id, "image", await fileToBase64(e.target.files[0]));
+              onChange={(e) => {
+                if (e.target.files?.[0]) {
+                  updateCardImage(card.id, e.target.files[0]);
+                }
               }}
             />
 
@@ -155,7 +194,9 @@ export default function AdminAboutPage() {
       </div>
 
       <button
-        onClick={() => save({ ...data, cards: [...data.cards, emptyCard()] })}
+        onClick={() =>
+          save({ ...data, cards: [...data.cards, emptyCard()] })
+        }
         className="bg-blue-600 text-white px-6 py-2 rounded-xl"
       >
         Add New Card

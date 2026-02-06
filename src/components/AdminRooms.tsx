@@ -1,6 +1,7 @@
 /**
  * src/components/AdminRooms.tsx
- * Admin rooms: list, add, edit, delete. Images stored as base64.
+ * Admin rooms: list, add, edit, delete.
+ * Images stored as URLs (Cloudinary).
  */
 import { useState, useEffect, useCallback } from "react";
 import type { Room } from "../types";
@@ -11,20 +12,41 @@ import {
   generateId,
 } from "../lib/firestoreStorage";
 
-/** Converts File to base64 data URL. */
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
+/* =========================
+   Cloudinary config (INLINE)
+   ========================= */
+const CLOUDINARY_UPLOAD_URL =
+  "https://api.cloudinary.com/v1_1/ddl2f55by/image/upload";
+const CLOUDINARY_UPLOAD_PRESET = "hotel_uploads";
+
+/** Upload a single image to Cloudinary */
+async function uploadImage(file: File): Promise<string> {
+  console.log("[Cloudinary] Uploading file:", file.name);
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+  const res = await fetch(CLOUDINARY_UPLOAD_URL, {
+    method: "POST",
+    body: formData,
   });
+
+  if (!res.ok) {
+    console.error("[Cloudinary] Upload failed", res);
+    throw new Error("Cloudinary upload failed");
+  }
+
+  const data = await res.json();
+  console.log("[Cloudinary] Uploaded URL:", data.secure_url);
+
+  return data.secure_url as string;
 }
 
-/** Converts multiple files to base64 data URLs. */
-async function filesToDataUrls(files: FileList | null): Promise<string[]> {
+/** Upload multiple images to Cloudinary */
+async function uploadImages(files: FileList | null): Promise<string[]> {
   if (!files?.length) return [];
-  return Promise.all(Array.from(files).map(fileToDataUrl));
+  return Promise.all(Array.from(files).map(uploadImage));
 }
 
 const emptyRoomForm = {
@@ -94,11 +116,13 @@ export default function AdminRooms() {
 
     if (!name || Number.isNaN(price) || price < 0) return;
 
+    const roomId = editingRoom ? editingRoom.id : generateId();
     let images = [...form.images];
 
     if (imageFiles?.length) {
-      const newUrls = await filesToDataUrls(imageFiles);
-      images = [...images, ...newUrls];
+      console.log("[Rooms] Uploading images to Cloudinary…");
+      const uploaded = await uploadImages(imageFiles);
+      images = [...images, ...uploaded];
     }
 
     if (editingRoom) {
@@ -111,7 +135,7 @@ export default function AdminRooms() {
       });
     } else {
       await saveRoom({
-        id: generateId(),
+        id: roomId,
         name,
         price,
         description,
@@ -128,13 +152,6 @@ export default function AdminRooms() {
     setDeleteConfirmId(null);
     loadRooms();
   }
-/*
-  function removeImage(index: number) {
-    setForm((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index),
-    }));
-  }*/
 
   const isModalOpen = isAddOpen || editingRoom !== null;
   const modalTitle = editingRoom ? "Edit room" : "Add room";
@@ -153,18 +170,11 @@ export default function AdminRooms() {
         </button>
       </div>
 
-      {/* Loading */}
-      {loading && (
-        <p className="text-sm text-gray-500">Loading rooms…</p>
-      )}
+      {loading && <p className="text-sm text-gray-500">Loading rooms…</p>}
 
-      {/* Empty state */}
       {!loading && rooms.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 py-16 text-center">
           <p className="text-gray-700 font-medium">No rooms yet</p>
-          <p className="mt-1 text-sm text-gray-500">
-            Click “Add room” to create your first listing.
-          </p>
         </div>
       ) : (
         <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -238,7 +248,6 @@ export default function AdminRooms() {
         </ul>
       )}
 
-      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-lg rounded-2xl bg-white">
