@@ -291,14 +291,43 @@ export default function AdminRooms() {
                 onChange={(e) => setImageFiles(e.target.files)}
               />
 
-              <div className="flex justify-end gap-3">
-                <button type="button" onClick={closeModal}>
-                  Cancel
-                </button>
-                <button type="submit">
-                  {editingRoom ? "Save changes" : "Add room"}
-                </button>
-              </div>
+<div className="flex justify-end gap-3">
+  <button
+    type="button"
+    onClick={closeModal}
+    className="
+      inline-flex items-center justify-center
+      rounded-xl px-4 py-2.5
+      text-sm font-medium text-gray-700
+      border border-gray-300 bg-white
+      shadow-sm
+      transition-all duration-300
+      hover:bg-gray-100 hover:-translate-y-0.5 hover:shadow-md
+      active:translate-y-0 active:shadow-sm
+      focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2
+    "
+  >
+    Cancel
+  </button>
+
+  <button
+    type="submit"
+    className="
+      inline-flex items-center justify-center
+      rounded-xl px-5 py-2.5
+      text-sm font-semibold text-white
+      bg-primary-600
+      shadow-md
+      transition-all duration-300
+      hover:bg-primary-700 hover:-translate-y-0.5 hover:shadow-lg
+      active:bg-primary-800 active:translate-y-0 active:shadow-sm
+      focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+    "
+  >
+    {editingRoom ? "Save changes" : "Add room"}
+  </button>
+</div>
+
             </form>
           </div>
         </div>

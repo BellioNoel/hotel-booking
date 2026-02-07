@@ -168,7 +168,7 @@ export default function BookingForm({
               className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
             >
               <span className="font-medium">
-                {room.name} — ${room.price}/night
+                {room.name} — FCFA{room.price}/night
               </span>
               {effectiveRooms.length > 1 && (
                 <button
@@ -194,7 +194,7 @@ export default function BookingForm({
             <option value="">Add another room…</option>
             {availableToAddFromForm.map((r) => (
               <option key={r.id} value={r.id}>
-                {r.name} — ${r.price}/night
+                {r.name} — FCFA{r.price}/night
               </option>
             ))}
           </select>
@@ -248,7 +248,7 @@ export default function BookingForm({
       {/* Total */}
       {nights > 0 && effectiveRooms.length > 0 && (
         <div className="rounded-lg bg-gray-50 p-4 text-sm font-medium">
-          Total ({nights} night{nights > 1 ? "s" : ""}): $
+          Total ({nights} night{nights > 1 ? "s" : ""}): FCFA
           {totalPrice.toLocaleString()}
         </div>
       )}
@@ -261,16 +261,46 @@ export default function BookingForm({
 
       {/* Actions */}
       <div className="flex gap-3">
-        <button type="button" onClick={onCancel}>
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={submitting || loadingRooms}
-        >
-          {submitting ? "Booking…" : "Confirm booking"}
-        </button>
-      </div>
+  <button
+    type="button"
+    onClick={onCancel}
+    className="
+      inline-flex items-center justify-center
+      rounded-xl px-4 py-2.5
+      text-sm font-medium
+      text-gray-700
+      bg-white border border-gray-300
+      shadow-sm
+      transition-all duration-200 ease-out
+      hover:bg-gray-50 hover:-translate-y-0.5 hover:shadow-md
+      active:translate-y-0 active:shadow-sm
+      focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2
+    "
+  >
+    Cancel
+  </button>
+
+  <button
+    type="submit"
+    disabled={submitting || loadingRooms}
+    className="
+      inline-flex items-center justify-center
+      rounded-xl px-5 py-2.5
+      text-sm font-semibold text-white
+      bg-primary-600
+      shadow-md
+      transition-all duration-300 ease-out
+      hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-primary-700 hover:shadow-xl
+      active:translate-y-0 active:scale-[0.98] active:bg-primary-800
+      disabled:cursor-not-allowed disabled:opacity-60
+      disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:hover:shadow-md
+      focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+    "
+  >
+    {submitting ? "Booking…" : "Confirm booking"}
+  </button>
+</div>
+
     </form>
   );
 }

@@ -125,7 +125,7 @@ export default function User() {
   function handleBookingSuccess() {
     setBookingModalOpen(false);
     setBookingRoomIds([]);
-    setSuccessMessage("Booking submitted! We’ll confirm by email shortly.");
+    setSuccessMessage("Booking submitted! We’ll confirm your request by email shortly thanks for wishing to be with you.");
     setTimeout(() => setSuccessMessage(null), 6000);
   }
 
@@ -164,15 +164,6 @@ export default function User() {
           {descriptions[index % descriptions.length]}
         </p>
       </section>
-
-      {/* SUCCESS MESSAGE */}
-      {successMessage && (
-        <div className="mx-auto max-w-6xl px-4 py-3">
-          <div className="rounded-lg border border-blue-200 bg-sky-50 px-4 py-2 text-blue-800 animate-slideDown">
-            {successMessage}
-          </div>
-        </div>
-      )}
 
       {/* ROOMS */}
       <section className="mx-auto max-w-6xl px-4 py-8">
@@ -228,6 +219,44 @@ export default function User() {
                 onCancel={handleBookingCancel}
               />
             </div>
+          </div>
+        </BookingModalOverlay>
+      )}
+
+      {/* SUCCESS MODAL */}
+      {successMessage && (
+        <BookingModalOverlay
+          onClose={() => setSuccessMessage(null)}
+          titleId="booking-success-title"
+        >
+          <div className="rounded-2xl bg-white p-6 text-center shadow-xl">
+            <h2
+              id="booking-success-title"
+              className="mb-3 text-lg font-semibold text-green-700"
+            >
+              Booking Successful 🎉
+            </h2>
+
+            <p className="mb-6 text-sm text-gray-700">
+              {successMessage}
+            </p>
+
+            <button
+              onClick={() => setSuccessMessage(null)}
+              className="
+                inline-flex items-center justify-center
+                rounded-xl px-6 py-2.5
+                text-sm font-semibold text-white
+                bg-primary-600
+                shadow-md
+                transition-all duration-300
+                hover:bg-primary-700 hover:-translate-y-0.5 hover:shadow-lg
+                active:bg-primary-800
+                focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+              "
+            >
+              Back to hotel
+            </button>
           </div>
         </BookingModalOverlay>
       )}

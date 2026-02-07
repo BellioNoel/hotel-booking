@@ -7,6 +7,13 @@ import { Mail, CalendarCheck, XCircle, BookOpen } from "lucide-react";
 type SortMode = "recent" | "oldest";
 type StatusFilter = "all" | "pending" | "accepted" | "rejected";
 
+type MessageModalState = {
+  open: boolean;
+  title: string;
+  message: string;
+  tone: "success" | "error" | "info";
+};
+
 export default function AdminBookings() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -20,6 +27,13 @@ export default function AdminBookings() {
   const [proposedCheckIn, setProposedCheckIn] = useState("");
   const [rejecting, setRejecting] = useState<Booking | null>(null);
   const [rejectReason, setRejectReason] = useState("");
+
+  const [messageModal, setMessageModal] = useState<MessageModalState>({
+    open: false,
+    title: "",
+    message: "",
+    tone: "info",
+  });
 
   // ---------- Load ----------
   const loadData = useCallback(async () => {
@@ -93,8 +107,8 @@ ${b.roomIds.map((id) => getRoomById(id)?.name ?? id).join(", ")}
 
 Check-in: ${updated.checkIn}
 Check-out: ${b.checkOut}
-
-Total payable on arrival: $${bookingTotal(b).toLocaleString()}
+NOTE: YOU ARE EXPECTLED TO STRICTLY MAKE PAYMENT ON ARRIVAL ON  ${updated.checkIn}
+Total payable on arrival: FCFA${bookingTotal(b).toLocaleString()}
 
 Best Regards,
 FRANCO HOTEL`;
@@ -106,7 +120,23 @@ FRANCO HOTEL`;
       body
     );
 
-    if (result.success) setEmailSentCount((c) => c + 1);
+    if (result.success) {
+      setEmailSentCount((c) => c + 1);
+      setMessageModal({
+        open: true,
+        title: "Booking Accepted",
+        message: "The booking was accepted and the approval email was sent successfully.",
+        tone: "success",
+      });
+    } else {
+      setMessageModal({
+        open: true,
+        title: "Email Failed",
+        message: "Booking was accepted, but the confirmation email could not be sent.",
+        tone: "error",
+      });
+    }
+
     setProposedCheckIn("");
   }
 
@@ -122,14 +152,31 @@ FRANCO HOTEL`;
       "rejected",
       "Booking Rejected",
       `Dear ${rejecting.guestName},
+      We're sorry to inform you that, your booking of the room in hour hotel has been reject for the following reasons
 
 ${rejectReason}
 
 Regards,
-SUPER-STAR HOTEL`
+FRANCO HOTEL`
     );
 
-    if (result.success) setEmailSentCount((c) => c + 1);
+    if (result.success) {
+      setEmailSentCount((c) => c + 1);
+      setMessageModal({
+        open: true,
+        title: "Booking Rejected",
+        message: "The rejection email was sent successfully.",
+        tone: "success",
+      });
+    } else {
+      setMessageModal({
+        open: true,
+        title: "Email Failed",
+        message: "The booking was rejected, but the email could not be sent.",
+        tone: "error",
+      });
+    }
+
     setRejecting(null);
     setRejectReason("");
   }
@@ -266,6 +313,26 @@ SUPER-STAR HOTEL`
           >
             Confirm Reject
           </button>
+        </div>
+      )}
+
+      {/* Message modal */}
+      {messageModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 space-y-4">
+            <h3 className="text-lg font-semibold">{messageModal.title}</h3>
+            <p className="text-sm text-gray-700">{messageModal.message}</p>
+            <div className="flex justify-end">
+              <button
+                onClick={() =>
+                  setMessageModal((m) => ({ ...m, open: false }))
+                }
+                className="rounded-xl bg-primary-600 px-4 py-2 text-white transition hover:-translate-y-0.5 hover:bg-primary-700"
+              >
+                OK
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </section>

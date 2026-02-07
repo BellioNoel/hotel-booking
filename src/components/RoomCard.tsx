@@ -90,14 +90,25 @@ export default function RoomCard({ room, onBook, compact = false }: RoomCardProp
 
         {onBook && (
           <div className="mt-auto pt-4">
-            <button
-              type="button"
-              onClick={() => onBook(room)}
-              className="w-full rounded-xl bg-primary-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 active:bg-primary-800"
-            >
-              Book this room
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => onBook(room)}
+            className="
+              w-full rounded-xl
+              bg-primary-600
+              px-4 py-3
+              text-sm font-semibold text-white
+              shadow-md
+              transition-all duration-300 ease-out
+              hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-primary-700 hover:shadow-xl
+              active:translate-y-0 active:scale-[0.98] active:bg-primary-800
+              focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+            "
+          >
+            Book this room
+          </button>
+        </div>
+        
         )}
       </div>
     </article>
