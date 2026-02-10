@@ -39,7 +39,7 @@ export default function UserLayout() {
               </span>
               <div className="ml-1 flex flex-col leading-tight">
                 <span className="text-sm font-bold tracking-wide text-gray-900">
-                  RANCO
+                  RANC
                 </span>
                 <span className="text-xs font-semibold tracking-widest text-gray-500">
                   HOTEL
