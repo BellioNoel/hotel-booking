@@ -236,14 +236,14 @@ export default function Landing() {
 
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
             <a
-              href="mailto:noeltebei478@gmail.com"
+              href="mailto:franchotel156@gmail.com"
               className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-100"
             >
               📧 Email
             </a>
 
             <a
-              href="https://wa.me/237678507737"
+              href="https://wa.me/237670776116"
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-100"
@@ -252,7 +252,7 @@ export default function Landing() {
             </a>
 
             <a
-              href="tel:+237678507737"
+              href="tel:+237670776116"
               className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-100"
             >
               📞 Call
