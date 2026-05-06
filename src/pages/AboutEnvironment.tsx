@@ -45,14 +45,14 @@ export default function AboutPage() {
   if (!data) return null;
 
   return (
-    <main className="bg-slate-50 min-h-screen">
+    <main className="min-h-screen bg-linear-to-b from-[#1a0710] via-[#2b0818] to-[#12050c] text-[#f8f4ef]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
         {/* HERO CARD */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="bg-white rounded-3xl shadow-xl overflow-hidden"
+          className="overflow-hidden rounded-3xl border border-white/10 bg-[#2a0e1a]/85 shadow-xl"
         >
           {data.hero.image && (
             <img
@@ -62,10 +62,10 @@ export default function AboutPage() {
             />
           )}
           <div className="p-6 sm:p-8 text-center">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#f8f4ef]">
               {data.hero.title}
             </h1>
-            <p className="mt-4 text-gray-600 text-sm sm:text-base md:text-lg">
+            <p className="mt-4 text-sm text-[#f8f4ef]/75 sm:text-base md:text-lg">
               {data.hero.description}
             </p>
           </div>
@@ -79,7 +79,7 @@ export default function AboutPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 * index, duration: 0.5 }}
-              className="bg-white rounded-2xl shadow-md overflow-hidden hover:scale-105 hover:shadow-xl transition-transform duration-300"
+              className="overflow-hidden rounded-2xl border border-white/10 bg-[#2a0e1a]/85 shadow-md transition-transform duration-300 hover:scale-105 hover:shadow-xl"
             >
               {card.image && (
                 <img
@@ -89,10 +89,10 @@ export default function AboutPage() {
                 />
               )}
               <div className="p-4 sm:p-6">
-                <h3 className="font-semibold text-lg sm:text-xl text-gray-900 line-clamp-2">
+                <h3 className="line-clamp-2 text-lg font-semibold text-[#f8f4ef] sm:text-xl">
                   {card.title}
                 </h3>
-                <p className="mt-2 text-sm sm:text-base text-gray-600 line-clamp-3">
+                <p className="mt-2 line-clamp-3 text-sm text-[#f8f4ef]/70 sm:text-base">
                   {card.description}
                 </p>
               </div>

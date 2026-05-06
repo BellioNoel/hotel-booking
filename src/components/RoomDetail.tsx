@@ -229,20 +229,20 @@ export default function RoomDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-b from-[#1a0710] via-[#2b0818] to-[#12050c]">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-accent-lime-500"></div>
       </div>
     );
   }
 
   if (!room) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-b from-[#1a0710] via-[#2b0818] to-[#12050c] text-[#f8f4ef]">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Room not found</h2>
+          <h2 className="mb-4 text-2xl font-bold text-[#f8f4ef]">Room not found</h2>
           <button
             onClick={() => navigate('/rooms')}
-            className="text-blue-600 hover:text-blue-800 font-medium"
+            className="font-medium text-accent-lime-500 hover:text-accent-lime-300"
           >
             Back to rooms
           </button>
@@ -270,13 +270,13 @@ export default function RoomDetail() {
     .replace("FCFA", "FCFA");
 
   return (
-    <div className="min-h-screen bg-gray-50 w-full">
+    <div className="min-h-screen w-full bg-linear-to-b from-[#1a0710] via-[#2b0818] to-[#12050c] text-[#f8f4ef]">
       {/* Header */}
-      <div className="bg-white shadow-sm">
+      <div className="border-b border-white/10 bg-[#2a0e1a]/85 shadow-sm backdrop-blur-sm">
         <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
           <button
             onClick={() => navigate('/rooms')}
-            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+            className="flex items-center text-[#f8f4ef]/80 hover:text-accent-lime-500 transition-colors"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -291,8 +291,8 @@ export default function RoomDetail() {
           {/* Main Content */}
           <div className="xl:col-span-3 space-y-6">
             {/* Image Gallery */}
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-              <div className="aspect-4/3 bg-gray-100">
+            <div className="overflow-hidden rounded-xl border border-white/10 bg-[#2a0e1a]/85 shadow-lg">
+              <div className="aspect-4/3 bg-[#15070d]">
                 {room.images && room.images[selectedImageIndex] ? (
                   <img
                     src={room.images[selectedImageIndex].url}
@@ -300,7 +300,7 @@ export default function RoomDetail() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-gray-400">
+                  <div className="flex h-full items-center justify-center text-[#f8f4ef]/40">
                     <span className="text-lg font-medium">No image</span>
                   </div>
                 )}
@@ -308,14 +308,14 @@ export default function RoomDetail() {
               
               {/* Image Thumbnails */}
               {room.images && room.images.length > 1 && (
-                <div className="p-4 border-t">
+                <div className="border-t border-white/10 p-4">
                   <div className="flex space-x-2 overflow-x-auto">
                     {room.images.map((image, index) => (
                       <button
                         key={index}
                         onClick={() => setSelectedImageIndex(index)}
-                        className={`shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
-                          selectedImageIndex === index ? 'border-blue-500' : 'border-gray-200'
+                        className={`h-20 w-20 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
+                          selectedImageIndex === index ? 'border-accent-lime-500' : 'border-white/20'
                         }`}
                       >
                         <img
@@ -329,8 +329,8 @@ export default function RoomDetail() {
                   
                   {/* Image Description */}
                   {room.images[selectedImageIndex]?.description && (
-                    <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-700 italic">
+                    <div className="mt-3 rounded-lg border border-white/10 bg-white/5 p-3">
+                      <p className="text-sm italic text-[#f8f4ef]/75">
                         {room.images[selectedImageIndex].description}
                       </p>
                     </div>
@@ -340,11 +340,11 @@ export default function RoomDetail() {
             </div>
 
             {/* Room Information */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="rounded-xl border border-white/10 bg-[#2a0e1a]/85 p-6 shadow-lg">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{room.name}</h1>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600">
+                  <h1 className="mb-2 text-3xl font-bold text-[#f8f4ef]">{room.name}</h1>
+                  <div className="flex items-center space-x-4 text-sm text-[#f8f4ef]/70">
                     <span className="flex items-center">
                       <svg className="w-4 h-4 mr-1 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -355,24 +355,24 @@ export default function RoomDetail() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-3xl font-bold text-blue-600">{priceFormatted}</div>
-                  <div className="text-sm text-gray-500">per night</div>
+                  <div className="text-3xl font-bold text-accent-lime-500">{priceFormatted}</div>
+                  <div className="text-sm text-[#f8f4ef]/65">per night</div>
                 </div>
               </div>
 
               <div className="prose max-w-none">
-                <p className="text-gray-700 text-lg leading-relaxed">{room.description || 'No description available'}</p>
+                <p className="text-lg leading-relaxed text-[#f8f4ef]/80">{room.description || 'No description available'}</p>
               </div>
 
               {/* Room Criteria */}
               {room.criteria && room.criteria.length > 0 && (
                 <div className="mt-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Room Features & Criteria</h3>
+                  <h3 className="mb-4 text-xl font-semibold text-[#f8f4ef]">Room Features & Criteria</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {room.criteria.map((criteria, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-4">
-                        <h4 className="font-semibold text-gray-900 mb-2">{criteria.name}</h4>
-                        <p className="text-sm text-gray-600">{criteria.description}</p>
+                      <div key={index} className="rounded-lg border border-white/10 bg-white/5 p-4">
+                        <h4 className="mb-2 font-semibold text-[#f8f4ef]">{criteria.name}</h4>
+                        <p className="text-sm text-[#f8f4ef]/70">{criteria.description}</p>
                       </div>
                     ))}
                   </div>
@@ -380,28 +380,28 @@ export default function RoomDetail() {
               )}
 
               {/* Room Details */}
-              <div className="bg-white rounded-xl shadow-lg p-6 mt-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Room Details</h3>
+              <div className="mt-6 rounded-xl border border-white/10 bg-[#230b15] p-6 shadow-lg">
+                <h3 className="mb-4 text-xl font-semibold text-[#f8f4ef]">Room Details</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Room Type</span>
-                    <span className="font-medium">{room.roomType || 'Standard'}</span>
+                    <span className="text-[#f8f4ef]/70">Room Type</span>
+                    <span className="font-medium text-[#f8f4ef]">{room.roomType || 'Standard'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Bed Type</span>
-                    <span className="font-medium">{room.bedType || 'Double'}</span>
+                    <span className="text-[#f8f4ef]/70">Bed Type</span>
+                    <span className="font-medium text-[#f8f4ef]">{room.bedType || 'Double'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Capacity</span>
-                    <span className="font-medium">{room.capacity || 2} Guests</span>
+                    <span className="text-[#f8f4ef]/70">Capacity</span>
+                    <span className="font-medium text-[#f8f4ef]">{room.capacity || 2} Guests</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Size</span>
-                    <span className="font-medium">{room.size ? `${room.size}m²` : 'Not specified'}</span>
+                    <span className="text-[#f8f4ef]/70">Size</span>
+                    <span className="font-medium text-[#f8f4ef]">{room.size ? `${room.size}m²` : 'Not specified'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Pet Friendly</span>
-                    <span className="font-medium">{room.petFriendly ? 'Yes' : 'No'}</span>
+                    <span className="text-[#f8f4ef]/70">Pet Friendly</span>
+                    <span className="font-medium text-[#f8f4ef]">{room.petFriendly ? 'Yes' : 'No'}</span>
                   </div>
                 </div>
               </div>
@@ -415,12 +415,12 @@ export default function RoomDetail() {
 
           {/* Booking Sidebar */}
           <div className="xl:col-span-1">
-            <div className="bg-white rounded-xl shadow-lg p-6 sticky top-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Book This Room</h3>
+            <div className="sticky top-6 rounded-xl border border-white/10 bg-[#2a0e1a]/90 p-6 shadow-lg">
+              <h3 className="mb-4 text-xl font-semibold text-[#f8f4ef]">Book This Room</h3>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="mb-2 block text-sm font-medium text-[#f8f4ef]/80">
                     Check-in Date
                   </label>
                   <input
@@ -428,12 +428,12 @@ export default function RoomDetail() {
                     value={checkIn}
                     onChange={(e) => setCheckIn(e.target.value)}
                     min={new Date().toISOString().split('T')[0]}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full rounded-lg border border-white/20 bg-[#1a0710]/80 px-3 py-2 text-[#f8f4ef] focus:ring-2 focus:ring-accent-lime-500 focus:border-accent-lime-500"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="mb-2 block text-sm font-medium text-[#f8f4ef]/80">
                     Check-out Date
                   </label>
                   <input
@@ -441,18 +441,18 @@ export default function RoomDetail() {
                     value={checkOut}
                     onChange={(e) => setCheckOut(e.target.value)}
                     min={checkIn || new Date().toISOString().split('T')[0]}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full rounded-lg border border-white/20 bg-[#1a0710]/80 px-3 py-2 text-[#f8f4ef] focus:ring-2 focus:ring-accent-lime-500 focus:border-accent-lime-500"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="mb-2 block text-sm font-medium text-[#f8f4ef]/80">
                     Number of Guests
                   </label>
                   <select 
                     value={numberOfGuests}
                     onChange={(e) => setNumberOfGuests(Number(e.target.value))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full rounded-lg border border-white/20 bg-[#1a0710]/80 px-3 py-2 text-[#f8f4ef] focus:ring-2 focus:ring-accent-lime-500 focus:border-accent-lime-500"
                   >
                     {Array.from({ length: room?.capacity || 2 }, (_, i) => i + 1).map(num => (
                       <option key={num} value={num}>
@@ -461,7 +461,7 @@ export default function RoomDetail() {
                     ))}
                   </select>
                   {room && (
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="mt-1 text-xs text-[#f8f4ef]/60">
                       Max capacity: {room.capacity} guests
                     </p>
                   )}
@@ -473,70 +473,70 @@ export default function RoomDetail() {
                       type="checkbox"
                       checked={hasPets}
                       onChange={(e) => setHasPets(e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 rounded border-white/30 text-accent-lime-500 focus:ring-accent-lime-500"
                       disabled={room && !room.petFriendly}
                     />
-                    <span className="ml-2 block text-sm text-gray-700">
+                    <span className="ml-2 block text-sm text-[#f8f4ef]/80">
                       I'm traveling with pets
                     </span>
                   </label>
                   {room && !room.petFriendly && (
-                    <p className="text-xs text-red-500 mt-1">
+                    <p className="mt-1 text-xs text-red-300">
                       This room does not allow pets
                     </p>
                   )}
                 </div>
 
                 {/* Guest Information */}
-                <div className="border-t pt-4 space-y-3">
-                  <h4 className="text-sm font-medium text-gray-900">Guest Information</h4>
+                <div className="space-y-3 border-t border-white/10 pt-4">
+                  <h4 className="text-sm font-medium text-[#f8f4ef]">Guest Information</h4>
                   
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="mb-1 block text-sm font-medium text-[#f8f4ef]/80">
                         First Name *
                       </label>
                       <input
                         type="text"
                         value={guestInfo.firstName}
                         onChange={(e) => setGuestInfo({...guestInfo, firstName: e.target.value})}
-                        className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full rounded-lg border border-white/20 bg-[#1a0710]/80 px-3 py-2 text-[#f8f4ef] focus:ring-2 focus:ring-accent-lime-500 focus:border-accent-lime-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="mb-1 block text-sm font-medium text-[#f8f4ef]/80">
                         Last Name *
                         </label>
                         <input
                           type="text"
                           value={guestInfo.lastName}
                           onChange={(e) => setGuestInfo({...guestInfo, lastName: e.target.value})}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full rounded-lg border border-white/20 bg-[#1a0710]/80 px-3 py-2 text-[#f8f4ef] focus:ring-2 focus:ring-accent-lime-500 focus:border-accent-lime-500"
                         />
                       </div>
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="mb-1 block text-sm font-medium text-[#f8f4ef]/80">
                         Email *
                       </label>
                       <input
                         type="email"
                         value={guestInfo.email}
                         onChange={(e) => setGuestInfo({...guestInfo, email: e.target.value})}
-                        className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full rounded-lg border border-white/20 bg-[#1a0710]/80 px-3 py-2 text-[#f8f4ef] focus:ring-2 focus:ring-accent-lime-500 focus:border-accent-lime-500"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="mb-1 block text-sm font-medium text-[#f8f4ef]/80">
                         Phone *
                       </label>
                       <input
                         type="tel"
                         value={guestInfo.phone}
                         onChange={(e) => setGuestInfo({...guestInfo, phone: e.target.value})}
-                        className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full rounded-lg border border-white/20 bg-[#1a0710]/80 px-3 py-2 text-[#f8f4ef] focus:ring-2 focus:ring-accent-lime-500 focus:border-accent-lime-500"
                       />
                     </div>
                     
@@ -546,9 +546,9 @@ export default function RoomDetail() {
                           type="checkbox"
                           checked={createAccount}
                           onChange={(e) => setCreateAccount(e.target.checked)}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          className="h-4 w-4 rounded border-white/30 text-accent-lime-500 focus:ring-accent-lime-500"
                         />
-                        <span className="ml-2 block text-sm text-gray-700">
+                        <span className="ml-2 block text-sm text-[#f8f4ef]/80">
                           Create an account for future bookings
                         </span>
                       </label>
@@ -557,20 +557,20 @@ export default function RoomDetail() {
                 </div>
               
               {/* Price Summary */}
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <div className="mt-6 rounded-lg border border-accent-lime-500/20 bg-primary-600/25 p-4">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-600">Price per night</span>
-                  <span className="font-medium">{priceFormatted}</span>
+                  <span className="text-[#f8f4ef]/70">Price per night</span>
+                  <span className="font-medium text-[#f8f4ef]">{priceFormatted}</span>
                 </div>
                 {totalCost > 0 && (
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-600">{nights} night{nights > 1 ? 's' : ''}</span>
-                    <span className="font-medium">{totalPriceFormatted}</span>
+                    <span className="text-[#f8f4ef]/70">{nights} night{nights > 1 ? 's' : ''}</span>
+                    <span className="font-medium text-[#f8f4ef]">{totalPriceFormatted}</span>
                   </div>
                 )}
-                <div className="flex justify-between items-center pt-2 border-t">
-                  <span className="font-semibold text-gray-900">Total</span>
-                  <span className="font-bold text-lg text-blue-600">
+                <div className="flex justify-between items-center pt-2 border-t border-white/15">
+                  <span className="font-semibold text-[#f8f4ef]">Total</span>
+                  <span className="text-lg font-bold text-accent-lime-500">
                     {totalCost > 0 ? totalPriceFormatted : 'Select dates'}
                   </span>
                 </div>
@@ -578,7 +578,7 @@ export default function RoomDetail() {
               
               <button 
                 onClick={handleBooking}
-                className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="mt-6 w-full rounded-lg bg-accent-lime-500 py-3 font-medium text-[#2b0818] transition-colors hover:bg-accent-lime-300"
               >
                 Book Now
               </button>

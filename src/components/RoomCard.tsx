@@ -35,7 +35,7 @@ export default function RoomCard({ room, onBook, compact = false }: RoomCardProp
             </svg>
           ))}
         </div>
-        <span className="text-xs text-gray-600">({count})</span>
+        <span className="text-xs text-[#f8f4ef]/70">({count})</span>
       </div>
     );
   };
@@ -51,12 +51,12 @@ export default function RoomCard({ room, onBook, compact = false }: RoomCardProp
 
   return (
     <article
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm transition-all duration-300 hover:shadow-lg hover:border-gray-300/80 cursor-pointer"
+      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#2a0e1a]/85 shadow-[0_12px_28px_rgba(0,0,0,0.35)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] cursor-pointer"
       aria-labelledby={`room-name-${room.id}`}
       onClick={() => navigate(`/rooms/${room.id}`)}
     >
       {/* Image */}
-      <div className="relative aspect-4/3 w-full overflow-hidden bg-gray-100">
+      <div className="relative aspect-4/3 w-full overflow-hidden bg-[#15070d]">
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -64,14 +64,13 @@ export default function RoomCard({ room, onBook, compact = false }: RoomCardProp
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-gray-400">
+          <div className="flex h-full w-full items-center justify-center text-[#f8f4ef]/50">
             <span className="text-sm font-medium">No image</span>
           </div>
         )}
-        {/* Price badge */}
-        <div className="absolute bottom-3 left-3 rounded-lg bg-white/95 px-3 py-1.5 text-sm font-semibold text-gray-900 shadow-sm backdrop-blur-sm">
+        <div className="absolute bottom-3 left-3 rounded-lg border border-accent-lime-500/35 bg-[#1b0a11]/80 px-3 py-1.5 text-sm font-semibold text-[#d7f29f] shadow-sm backdrop-blur-sm">
           {priceFormatted}
-          <span className="ml-0.5 font-normal text-gray-500">/ night</span>
+          <span className="ml-0.5 font-normal text-[#f8f4ef]/70">/ night</span>
         </div>
       </div>
 
@@ -81,7 +80,7 @@ export default function RoomCard({ room, onBook, compact = false }: RoomCardProp
       >
         <h2
           id={`room-name-${room.id}`}
-          className="text-lg font-semibold tracking-tight text-gray-900 sm:text-xl"
+          className="text-lg font-semibold tracking-tight text-[#f8f4ef] sm:text-xl"
         >
           {room.name}
         </h2>
@@ -94,7 +93,7 @@ export default function RoomCard({ room, onBook, compact = false }: RoomCardProp
         {/* Description container (fixed visual height) */}
         <div className="mt-2">
           <p
-            className={`text-gray-600 text-sm leading-relaxed transition-all ${
+            className={`text-[#f8f4ef]/75 text-sm leading-relaxed transition-all ${
               expanded
                 ? "max-h-40 overflow-y-auto"
                 : compact
@@ -110,7 +109,7 @@ export default function RoomCard({ room, onBook, compact = false }: RoomCardProp
             <button
               type="button"
               onClick={() => setExpanded((v) => !v)}
-              className="mt-1 text-xs font-medium text-primary-600 hover:text-primary-700 focus:outline-none"
+              className="mt-1 text-xs font-medium text-accent-lime-500 hover:text-accent-lime-300 focus:outline-none"
               aria-expanded={expanded}
             >
               {expanded ? "Show less" : "Read more"}
@@ -125,14 +124,14 @@ export default function RoomCard({ room, onBook, compact = false }: RoomCardProp
             onClick={() => onBook(room)}
             className="
               w-full rounded-xl
-              bg-primary-600
+              bg-accent-lime-500
               px-4 py-3
-              text-sm font-semibold text-white
+              text-sm font-bold text-[#2b0818]
               shadow-md
               transition-all duration-300 ease-out
-              hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-primary-700 hover:shadow-xl
-              active:translate-y-0 active:scale-[0.98] active:bg-primary-800
-              focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+              hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-accent-lime-300 hover:shadow-xl
+              active:translate-y-0 active:scale-[0.98] active:bg-accent-lime-500
+              focus:outline-none focus:ring-2 focus:ring-accent-lime-500 focus:ring-offset-2
             "
           >
             Book this room

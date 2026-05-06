@@ -1,41 +1,28 @@
-/*index.css*/
-/* stylelint-disable at-rule-no-unknown */
 @import "tailwindcss";
 
-/* ---------------------------------------------------------------------------
-   Theme: design tokens for consistent, customizable SaaS UI.
-   Override these in @theme to rebrand (primary, radius, spacing).
---------------------------------------------------------------------------- */
 @theme {
-  /* Primary palette (brand accent) */
-  --color-primary-50: oklch(0.98 0.02 250);
-  --color-primary-100: oklch(0.94 0.04 250);
-  --color-primary-200: oklch(0.88 0.08 250);
-  --color-primary-300: oklch(0.78 0.12 250);
-  --color-primary-400: oklch(0.65 0.18 250);
-  --color-primary-500: oklch(0.55 0.22 262);
-  --color-primary-600: oklch(0.48 0.22 262);
-  --color-primary-700: oklch(0.42 0.18 265);
-  --color-primary-800: oklch(0.36 0.14 265);
-  --color-primary-900: oklch(0.30 0.10 265);
-  --color-primary-950: oklch(0.20 0.06 265);
+  --color-primary-50: #f6eef0;
+  --color-primary-100: #ead9de;
+  --color-primary-200: #d9b6bf;
+  --color-primary-300: #be8a99;
+  --color-primary-400: #9b5e72;
+  --color-primary-500: #7f3e56;
+  --color-primary-600: #6e1f3d;
+  --color-primary-700: #5a1832;
+  --color-primary-800: #451127;
+  --color-primary-900: #320a1c;
+  --color-primary-950: #1a040f;
 
-  /* Card/modal radius — easy to tune for look & feel */
-  --radius-card: 0.75rem;
-  --radius-modal: 1rem;
-  --radius-button: 0.5rem;
-
-  /* App spacing — consistent gaps and padding */
-  --spacing-app: 1rem;
-  --spacing-section: 1.5rem;
-  --spacing-page: 2rem;
+  --color-accent-lime-100: #e4f7c4;
+  --color-accent-lime-300: #b5ea53;
+  --color-accent-lime-500: #94d728;
+  --color-accent-lime-700: #5c8d0f;
 }
 
-/* Base styles: typography, antialiasing, layout */
 @layer base {
   :root {
-    font-family: ui-sans-serif, system-ui, sans-serif, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    line-height: 1.5;
+    font-family: "Poppins", "Segoe UI", sans-serif;
+    line-height: 1.45;
     font-weight: 400;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
@@ -43,13 +30,23 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  html {
+    scroll-behavior: smooth;
+    background: #12070b;
+  }
+
   body {
     margin: 0;
     min-width: 320px;
     min-height: 100vh;
+    color: #f8f4ef;
+    background:
+      radial-gradient(circle at 10% 15%, rgba(148, 215, 40, 0.12), transparent 30%),
+      radial-gradient(circle at 90% 5%, rgba(110, 31, 61, 0.35), transparent 30%),
+      linear-gradient(135deg, #12070b 0%, #210b14 45%, #13070d 100%);
   }
 
-  html {
-    scroll-behavior: smooth;
+  #root {
+    min-height: 100vh;
   }
 }

@@ -79,12 +79,12 @@ export default function MyBookings() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'confirmed': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      case 'completed': return 'bg-blue-100 text-blue-800';
-      case 'no-show': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'confirmed': return 'bg-accent-lime-500/20 text-[#d7f29f] border border-accent-lime-500/30';
+      case 'pending': return 'bg-amber-500/20 text-amber-200 border border-amber-400/30';
+      case 'cancelled': return 'bg-red-500/20 text-red-200 border border-red-400/30';
+      case 'completed': return 'bg-primary-600/30 text-[#f8f4ef] border border-primary-400/30';
+      case 'no-show': return 'bg-white/10 text-[#f8f4ef]/80 border border-white/15';
+      default: return 'bg-white/10 text-[#f8f4ef]/80 border border-white/15';
     }
   };
 
@@ -101,10 +101,10 @@ export default function MyBookings() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-linear-to-b from-[#1a0710] via-[#2b0818] to-[#12050c] py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center h-64">
-            <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
+            <RefreshCw className="h-8 w-8 animate-spin text-accent-lime-500" />
           </div>
         </div>
       </div>
@@ -112,18 +112,18 @@ export default function MyBookings() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-linear-to-b from-[#1a0710] via-[#2b0818] to-[#12050c] py-8 text-[#f8f4ef]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <div className="mb-6 rounded-xl border border-white/10 bg-[#2a0e1a]/85 p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">My Bookings</h1>
-              <p className="text-gray-600 mt-1">Manage your hotel reservations</p>
+              <h1 className="text-2xl font-bold text-[#f8f4ef]">My Bookings</h1>
+              <p className="mt-1 text-[#f8f4ef]/70">Manage your hotel reservations</p>
             </div>
             <button
               onClick={loadBookings}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center space-x-2 rounded-lg bg-accent-lime-500 px-4 py-2 text-[#2b0818] hover:bg-accent-lime-300 transition-colors"
             >
               <RefreshCw className="w-4 h-4" />
               <span>Refresh</span>
@@ -133,20 +133,20 @@ export default function MyBookings() {
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+          <div className="mb-6 rounded-lg border border-red-400/30 bg-red-500/15 px-4 py-3 text-red-200">
             {error}
           </div>
         )}
 
         {/* Bookings List */}
         {bookings.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-            <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
-            <p className="text-gray-500 mb-6">You haven't made any reservations yet.</p>
+          <div className="rounded-xl border border-white/10 bg-[#2a0e1a]/85 p-12 text-center shadow-sm">
+            <Calendar className="mx-auto mb-4 h-16 w-16 text-[#f8f4ef]/30" />
+            <h3 className="mb-2 text-lg font-medium text-[#f8f4ef]">No bookings found</h3>
+            <p className="mb-6 text-[#f8f4ef]/65">You haven't made any reservations yet.</p>
             <a
               href="/booking"
-              className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center space-x-2 rounded-lg bg-accent-lime-500 px-4 py-2 text-[#2b0818] hover:bg-accent-lime-300 transition-colors"
             >
               <Calendar className="w-4 h-4" />
               <span>Book a Room</span>
@@ -155,22 +155,22 @@ export default function MyBookings() {
         ) : (
           <div className="space-y-6">
             {bookings.map((booking) => (
-              <div key={booking._id} className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div key={booking._id} className="overflow-hidden rounded-xl border border-white/10 bg-[#2a0e1a]/85 shadow-sm">
                 <div className="p-6">
                   {/* Booking Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-4">
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900">
+                        <h3 className="text-lg font-semibold text-[#f8f4ef]">
                           Booking #{booking.bookingNumber}
                         </h3>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-[#f8f4ef]/60">
                           Booked on {new Date(booking.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
+                      <span className={`inline-flex items-center space-x-1 rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(booking.status)}`}>
                         {getStatusIcon(booking.status)}
                         <span className="capitalize">{booking.status}</span>
                       </span>
@@ -180,35 +180,35 @@ export default function MyBookings() {
                   {/* Booking Details */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                     <div className="flex items-center space-x-2">
-                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <Calendar className="h-4 w-4 text-[#f8f4ef]/45" />
                       <div>
-                        <p className="text-xs text-gray-500">Check-in</p>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-xs text-[#f8f4ef]/60">Check-in</p>
+                        <p className="text-sm font-medium text-[#f8f4ef]">
                           {new Date(booking.checkIn).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <Calendar className="h-4 w-4 text-[#f8f4ef]/45" />
                       <div>
-                        <p className="text-xs text-gray-500">Check-out</p>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-xs text-[#f8f4ef]/60">Check-out</p>
+                        <p className="text-sm font-medium text-[#f8f4ef]">
                           {new Date(booking.checkOut).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Users className="w-4 h-4 text-gray-400" />
+                      <Users className="h-4 w-4 text-[#f8f4ef]/45" />
                       <div>
-                        <p className="text-xs text-gray-500">Duration</p>
-                        <p className="text-sm font-medium text-gray-900">{booking.nights} nights</p>
+                        <p className="text-xs text-[#f8f4ef]/60">Duration</p>
+                        <p className="text-sm font-medium text-[#f8f4ef]">{booking.nights} nights</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <DollarSign className="w-4 h-4 text-gray-400" />
+                      <DollarSign className="h-4 w-4 text-[#f8f4ef]/45" />
                       <div>
-                        <p className="text-xs text-gray-500">Total Price</p>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-xs text-[#f8f4ef]/60">Total Price</p>
+                        <p className="text-sm font-medium text-[#f8f4ef]">
                           FCFA {booking.totalPrice.toLocaleString()}
                         </p>
                       </div>
@@ -217,7 +217,7 @@ export default function MyBookings() {
 
                   {/* Rooms */}
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-900 mb-2">Rooms</h4>
+                    <h4 className="mb-2 text-sm font-medium text-[#f8f4ef]">Rooms</h4>
                     <div className="space-y-2">
                       {booking.rooms.map((room, index) => {
                         const roomObj = typeof room.room === 'object' ? room.room : null;
@@ -227,7 +227,7 @@ export default function MyBookings() {
                           imageUrl = typeof img === 'string' ? img : (img?.url || null);
                         }
                         return (
-                          <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                          <div key={index} className="flex items-center space-x-3 rounded-lg border border-white/10 bg-white/5 p-3">
                             {imageUrl && (
                               <img
                                 src={imageUrl}
@@ -236,8 +236,8 @@ export default function MyBookings() {
                               />
                             )}
                             <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-900">{room.roomName}</p>
-                              <p className="text-xs text-gray-500">
+                              <p className="text-sm font-medium text-[#f8f4ef]">{room.roomName}</p>
+                              <p className="text-xs text-[#f8f4ef]/60">
                                 FCFA {room.roomPrice.toLocaleString()} per night
                               </p>
                             </div>
@@ -248,29 +248,29 @@ export default function MyBookings() {
                   </div>
 
                   {/* Guest Information */}
-                  <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-                    <h4 className="text-sm font-medium text-gray-900 mb-2">Guest Information</h4>
+                  <div className="mb-4 rounded-lg border border-white/10 bg-white/5 p-4">
+                    <h4 className="mb-2 text-sm font-medium text-[#f8f4ef]">Guest Information</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                       <div>
-                        <span className="text-gray-500">Name:</span>
-                        <span className="ml-2 text-gray-900">
+                        <span className="text-[#f8f4ef]/60">Name:</span>
+                        <span className="ml-2 text-[#f8f4ef]">
                           {booking.guestInfo.firstName} {booking.guestInfo.lastName}
                         </span>
                       </div>
                       <div>
-                        <span className="text-gray-500">Email:</span>
-                        <span className="ml-2 text-gray-900">{booking.guestInfo.email}</span>
+                        <span className="text-[#f8f4ef]/60">Email:</span>
+                        <span className="ml-2 text-[#f8f4ef]">{booking.guestInfo.email}</span>
                       </div>
                       <div>
-                        <span className="text-gray-500">Phone:</span>
-                        <span className="ml-2 text-gray-900">{booking.guestInfo.phone}</span>
+                        <span className="text-[#f8f4ef]/60">Phone:</span>
+                        <span className="ml-2 text-[#f8f4ef]">{booking.guestInfo.phone}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Actions */}
                   <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-[#f8f4ef]/65">
                       {booking.status === 'pending' && 'Your booking is awaiting confirmation.'}
                       {booking.status === 'confirmed' && 'Your booking is confirmed. We look forward to your stay!'}
                       {booking.status === 'cancelled' && 'This booking has been cancelled.'}
@@ -282,7 +282,7 @@ export default function MyBookings() {
                       <button
                         onClick={() => handleCancelBooking(booking._id)}
                         disabled={cancellingId === booking._id}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {cancellingId === booking._id ? (
                           <>

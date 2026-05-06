@@ -86,10 +86,10 @@ export default function User() {
   );
 
   const sloganColors = [
-    "text-blue-700",
-    "text-sky-600",
-    "text-blue-600",
-    "text-sky-500",
+    "text-[#d7f29f]",
+    "text-[#b5ea53]",
+    "text-[#e7ffbe]",
+    "text-[#c8ec78]",
   ];
 
   const [index, setIndex] = useState(0);
@@ -172,9 +172,9 @@ export default function User() {
 
   /* ---------- RENDER ---------- */
   return (
-    <main className="min-h-screen bg-linear-to-b from-sky-50 to-white">
+    <main className="min-h-screen bg-linear-to-b from-[#1a0710] via-[#2b0818] to-[#12050c] text-[#f8f4ef]">
       {/* HERO (COMPACT) */}
-      <section className="border-b border-blue-100 bg-white px-4 py-8 text-center">
+      <section className="border-b border-accent-lime-500/20 bg-[#250913]/70 px-4 py-8 text-center backdrop-blur-sm">
         {/* Fixed compact height */}
         <div className="relative h-10.5 sm:h-12">
           <h1
@@ -196,7 +196,7 @@ export default function User() {
         </div>
 
         {/* Location text — BLACK ONLY */}
-        <p className="mt-2 max-w-2xl mx-auto text-sm sm:text-base text-black">
+        <p className="mt-2 max-w-2xl mx-auto text-sm text-[#f8f4ef]/85 sm:text-base">
           {descriptions[index % descriptions.length]}
         </p>
       </section>
@@ -204,32 +204,32 @@ export default function User() {
       {/* ROOMS */}
       <section className="mx-auto max-w-6xl px-4 py-8">
         <div className="mb-6">
-          <h2 className="mb-4 text-xl sm:text-2xl font-semibold text-blue-900">
+          <h2 className="mb-4 text-xl sm:text-2xl font-semibold text-[#f8f4ef]">
             Our Rooms
           </h2>
           
           {/* Search and Filters */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="rounded-xl border border-white/10 bg-[#2a0e1a]/85 p-4 shadow-sm">
             {/* Search Bar */}
             <div className="flex flex-col sm:flex-row gap-4 mb-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#f8f4ef]/50 w-5 h-5" />
                 <input
                   type="text"
                   placeholder="Search rooms by name or description..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full rounded-lg border border-white/20 bg-[#1a0710]/80 py-2 pl-10 pr-4 text-[#f8f4ef] placeholder:text-[#f8f4ef]/45 focus:outline-none focus:ring-2 focus:ring-accent-lime-500 focus:border-transparent"
                 />
               </div>
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center space-x-2 rounded-lg border border-white/20 bg-white/5 px-4 py-2 transition-colors hover:bg-white/10"
               >
                 <Filter className="w-4 h-4" />
                 <span>Filters</span>
                 {(selectedType || priceRange.min > 0 || priceRange.max < 200000) && (
-                  <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                  <span className="rounded-full bg-accent-lime-500 px-2 py-1 text-xs font-semibold text-[#2b0818]">
                     Active
                   </span>
                 )}
@@ -238,17 +238,17 @@ export default function User() {
 
             {/* Filter Options */}
             {showFilters && (
-              <div className="border-t border-gray-200 pt-4 space-y-4">
+              <div className="space-y-4 border-t border-white/10 pt-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Room Type Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="mb-1 block text-sm font-medium text-[#f8f4ef]/80">
                       Room Type
                     </label>
                     <select
                       value={selectedType}
                       onChange={(e) => setSelectedType(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full rounded-lg border border-white/20 bg-[#1a0710]/80 px-3 py-2 text-[#f8f4ef] focus:outline-none focus:ring-2 focus:ring-accent-lime-500"
                     >
                       <option value="">All Types</option>
                       <option value="standard">Standard</option>
@@ -260,7 +260,7 @@ export default function User() {
 
                   {/* Price Range Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="mb-1 block text-sm font-medium text-[#f8f4ef]/80">
                       Price Range (FCFA)
                     </label>
                     <div className="flex items-center space-x-2">
@@ -269,15 +269,15 @@ export default function User() {
                         placeholder="Min"
                         value={priceRange.min}
                         onChange={(e) => setPriceRange({ ...priceRange, min: parseInt(e.target.value) || 0 })}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="flex-1 rounded-lg border border-white/20 bg-[#1a0710]/80 px-3 py-2 text-[#f8f4ef] focus:outline-none focus:ring-2 focus:ring-accent-lime-500"
                       />
-                      <span className="text-gray-500">-</span>
+                      <span className="text-[#f8f4ef]/60">-</span>
                       <input
                         type="number"
                         placeholder="Max"
                         value={priceRange.max}
                         onChange={(e) => setPriceRange({ ...priceRange, max: parseInt(e.target.value) || 200000 })}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="flex-1 rounded-lg border border-white/20 bg-[#1a0710]/80 px-3 py-2 text-[#f8f4ef] focus:outline-none focus:ring-2 focus:ring-accent-lime-500"
                       />
                     </div>
                   </div>
@@ -291,7 +291,7 @@ export default function User() {
                       setSelectedType('');
                       setPriceRange({ min: 0, max: 200000 });
                     }}
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-sm font-medium text-[#d7f29f] hover:text-accent-lime-300"
                   >
                     Clear all filters
                   </button>
@@ -303,16 +303,16 @@ export default function User() {
 
         {/* Results Count */}
         {searchTerm || selectedType || priceRange.min > 0 || priceRange.max < 200000 ? (
-          <div className="mb-4 text-sm text-gray-600">
+          <div className="mb-4 text-sm text-[#f8f4ef]/70">
             Showing {filteredRooms.length} of {rooms.length} rooms
           </div>
         ) : null}
 
         {/* Rooms Grid */}
         {filteredRooms.length === 0 ? (
-          <div className="rounded-xl border-2 border-dashed border-blue-200 py-12 text-center">
-            <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-blue-600">
+          <div className="rounded-xl border-2 border-dashed border-white/20 bg-white/5 py-12 text-center">
+            <Search className="mx-auto mb-3 h-12 w-12 text-[#f8f4ef]/35" />
+            <p className="text-[#d7f29f]">
               {rooms.length === 0 ? 'No rooms available yet.' : 'No rooms match your search criteria.'}
             </p>
             {(searchTerm || selectedType || priceRange.min > 0 || priceRange.max < 200000) && (
@@ -322,7 +322,7 @@ export default function User() {
                   setSelectedType('');
                   setPriceRange({ min: 0, max: 200000 });
                 }}
-                className="mt-3 text-blue-600 hover:text-blue-700 font-medium text-sm"
+                className="mt-3 text-sm font-medium text-[#d7f29f] hover:text-accent-lime-300"
               >
                 Clear filters
               </button>
@@ -333,7 +333,7 @@ export default function User() {
             {filteredRooms.map((room, i) => (
               <li
                 key={room.id}
-                className="rounded-2xl border border-blue-100 bg-white shadow-sm transition-transform hover:scale-[1.02]"
+                className="rounded-2xl border border-white/10 bg-transparent shadow-sm transition-transform hover:scale-[1.02]"
                 style={{ animationDelay: `${i * 80}ms` }}
               >
                 <RoomCard room={room} onBook={handleBook} />
@@ -349,17 +349,17 @@ export default function User() {
           onClose={handleBookingCancel}
           titleId="booking-modal-title"
         >
-          <div className="rounded-2xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b px-6 py-4">
+          <div className="rounded-2xl border border-white/10 bg-[#2a0e1a] shadow-xl">
+            <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
               <h2
                 id="booking-modal-title"
-                className="font-semibold text-blue-900"
+                className="font-semibold text-[#f8f4ef]"
               >
                 Complete your booking
               </h2>
               <button
                 onClick={handleBookingCancel}
-                className="text-xl text-blue-600"
+                className="text-xl text-[#d7f29f]"
               >
                 ×
               </button>
@@ -382,15 +382,15 @@ export default function User() {
           onClose={() => setSuccessMessage(null)}
           titleId="booking-success-title"
         >
-          <div className="rounded-2xl bg-white p-6 text-center shadow-xl">
+          <div className="rounded-2xl border border-white/10 bg-[#2a0e1a] p-6 text-center shadow-xl">
             <h2
               id="booking-success-title"
-              className="mb-3 text-lg font-semibold text-green-700"
+              className="mb-3 text-lg font-semibold text-[#d7f29f]"
             >
               Booking Successful 🎉
             </h2>
 
-            <p className="mb-6 text-sm text-gray-700">
+            <p className="mb-6 text-sm text-[#f8f4ef]/80">
               {successMessage}
             </p>
 
@@ -399,13 +399,13 @@ export default function User() {
               className="
                 inline-flex items-center justify-center
                 rounded-xl px-6 py-2.5
-                text-sm font-semibold text-white
-                bg-primary-600
+                text-sm font-semibold text-[#2b0818]
+                bg-accent-lime-500
                 shadow-md
                 transition-all duration-300
-                hover:bg-primary-700 hover:-translate-y-0.5 hover:shadow-lg
-                active:bg-primary-800
-                focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+                hover:bg-accent-lime-300 hover:-translate-y-0.5 hover:shadow-lg
+                active:bg-accent-lime-500
+                focus:outline-none focus:ring-2 focus:ring-accent-lime-500 focus:ring-offset-2
               "
             >
               Back to hotel
