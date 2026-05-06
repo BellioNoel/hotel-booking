@@ -49,7 +49,10 @@ export const authAPI = {
     phone: string;
   }) => apiRequest('/auth/register', {
     method: 'POST',
-    body: JSON.stringify(userData),
+    body: JSON.stringify({
+      ...userData,
+      email: userData.email.trim().toLowerCase(),
+    }),
   }),
 
   login: (credentials: {
@@ -57,7 +60,10 @@ export const authAPI = {
     password: string;
   }) => apiRequest('/auth/login', {
     method: 'POST',
-    body: JSON.stringify(credentials),
+    body: JSON.stringify({
+      ...credentials,
+      email: credentials.email.trim().toLowerCase(),
+    }),
   }),
 
   adminLogin: (adminKey: string) => apiRequest('/auth/admin/login', {
