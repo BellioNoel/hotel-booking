@@ -49,19 +49,16 @@ const bookingLimiter = rateLimit({
 });
 
 // CORS configuration
-const allowedOrigins = process.env.NODE_ENV === 'production' 
-  ? [
-      'https://www.frachotel.com',
-      'https://frachotel.com',
-      process.env.FRONTEND_URL
-    ].filter(Boolean)
-  : [
-      process.env.FRONTEND_URL || 'http://localhost:5173',
-      'http://localhost:3000',
-      'http://localhost:5175',
-      'http://localhost:5176',
-      'http://localhost:5177'
-    ];
+const allowedOrigins = [
+  'https://www.frachotel.com',
+  'https://frachotel.com',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:5175',
+  'http://localhost:5176',
+  'http://localhost:5177',
+  process.env.FRONTEND_URL
+].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
