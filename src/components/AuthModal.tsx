@@ -4,7 +4,6 @@ import { X } from 'lucide-react';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import PasswordResetForm from './PasswordResetForm';
-import AdminLoginForm from './AdminLoginForm';
 
 type AuthView = 'login' | 'register' | 'reset';
 
@@ -48,7 +47,6 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
       case 'reset':
         return (
           <PasswordResetForm
-            onClose={handleClose}
             onSwitchToLogin={() => switchView('login')}
           />
         );

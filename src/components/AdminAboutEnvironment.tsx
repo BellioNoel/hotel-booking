@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { configAPI } from "../lib/api";
+import { configAPI, uploadAPI } from "../lib/api";
 
 interface AboutCard {
   id: string;
   title: string;
   description: string;
-  image: string; // URL (Cloudinary)
+  image: string;
 }
 
 interface AboutPageData {
@@ -19,10 +19,6 @@ const emptyCard = (): AboutCard => ({
   description: "",
   image: "",
 });
-
-const CLOUDINARY_UPLOAD_URL =
-  "https://api.cloudinary.com/v1_1/ddl2f55by/image/upload";
-const CLOUDINARY_UPLOAD_PRESET = "hotel_uploads";
 
 export default function AdminAboutEnvironment() {
   const [data, setData] = useState<AboutPageData>({
@@ -56,23 +52,10 @@ export default function AdminAboutEnvironment() {
     }
   }
 
-  /** Upload image to Cloudinary and return secure URL */
+  /** Upload image to backend storage provider (Cloudinary) and return URL */
   async function uploadImage(file: File): Promise<string> {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-
-    const res = await fetch(CLOUDINARY_UPLOAD_URL, {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!res.ok) {
-      throw new Error("Cloudinary upload failed");
-    }
-
-    const data = await res.json();
-    return data.secure_url as string;
+    const res = await uploadAPI.uploadImage(file);
+    return res?.image?.url || "";
   }
 
   async function updateHeroImage(file: File) {

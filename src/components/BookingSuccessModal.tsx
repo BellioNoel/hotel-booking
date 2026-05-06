@@ -1,6 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-import { authAPI } from "../lib/api";
 import { X, CheckCircle, Key, Calendar, Receipt, User } from "lucide-react";
 
 interface BookingSuccessModalProps {
@@ -19,7 +17,6 @@ interface BookingSuccessModalProps {
 
 export default function BookingSuccessModal({ isOpen, onClose, bookingData }: BookingSuccessModalProps) {
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const handleAuthenticateAndNavigate = async (route: string) => {
     if (bookingData.accountCreated) {
@@ -96,7 +93,7 @@ export default function BookingSuccessModal({ isOpen, onClose, bookingData }: Bo
           {bookingData.accountCreated && (
             <div className="mb-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
               <div className="flex items-start gap-3">
-                <Key className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                <Key className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
                 <div>
                   <h3 className="font-semibold text-amber-900 mb-2">Your Temporary Password</h3>
                   <div className="bg-white p-3 rounded border border-amber-300">

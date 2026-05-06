@@ -1,7 +1,7 @@
 // src/components/BookingForm.tsx
 import { useState, useId, useEffect, useMemo, useCallback } from "react";
 import type { Room, RoomId } from "../types";
-import { bookingsAPI, roomsAPI, handleAPIRequest } from "../lib/api";
+import { bookingsAPI, roomsAPI } from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import GeneratedPasswordDisplay from "./GeneratedPasswordDisplay";
@@ -23,7 +23,7 @@ export default function BookingForm({
   onSuccess,
   onCancel,
 }: BookingFormProps) {
-  const { user, isAuthenticated, register } = useAuth();
+  const { isAuthenticated, register } = useAuth();
   const toast = useToast();
   
   const [checkIn, setCheckIn] = useState(todayISO());

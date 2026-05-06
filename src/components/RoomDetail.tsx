@@ -3,20 +3,17 @@
  * Detailed room view for candidates with image gallery, criteria, and booking
  */
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import type { Room } from "../types";
 import Reviews from "./Reviews";
 import BookingSuccessModal from "./BookingSuccessModal";
 import { roomsAPI, handleAPIRequest } from "../lib/api";
 import { sendBookingReceiptEmail, sendAccountCreationEmail } from "../lib/email";
-import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 
 export default function RoomDetail() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
-  const { user, isAuthenticated } = useAuth();
   const { showSuccess, showError, showInfo } = useToast();
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,27 +35,6 @@ export default function RoomDetail() {
   const [totalCost, setTotalCost] = useState(0);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingResult, setBookingResult] = useState<any>(null);
-
-  // Handle pending booking data from redirect
-  useEffect(() => {
-    if (location.state?.pendingBooking && isAuthenticated) {
-      const pendingBooking = location.state.pendingBooking;
-      
-      // Pre-fill the form with pending booking data
-      setCheckIn(pendingBooking.checkIn);
-      setCheckOut(pendingBooking.checkOut);
-      setNumberOfGuests(pendingBooking.numberOfGuests);
-      setHasPets(pendingBooking.hasPets);
-      setGuestInfo(pendingBooking.guestInfo);
-      setCreateAccount(pendingBooking.createAccount);
-      
-      // Show success message
-      showSuccess('Welcome Back!', 'Your booking details have been filled in. Please review and confirm.');
-      
-      // Clear the location state
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state, isAuthenticated, showSuccess]);
 
   // Fetch room details
   useEffect(() => {
@@ -89,8 +65,8 @@ export default function RoomDetail() {
   // Calculate total cost when dates change
   useEffect(() => {
     if (checkIn && checkOut && room) {
-      const checkInDate = new Date(checkIn);
-      const checkOutDate = new Date(checkOut);
+      const checkInDate = new Date(checkIn).getTime();
+      const checkOutDate = new Date(checkOut).getTime();
       const nightsCount = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
       
       if (nightsCount > 0) {
@@ -128,7 +104,7 @@ export default function RoomDetail() {
     }
     
     // Check if email exists for guest bookings (both with and without account creation)
-    if (!isAuthenticated && guestInfo.email) {
+    if (guestInfo.email) {
       try {
         // Check if user already exists
         const checkResponse = await fetch('http://localhost:5000/api/auth/check-email', {
@@ -179,30 +155,27 @@ export default function RoomDetail() {
       }
     }
     
+    // Add guest info for unauthenticated bookings
+    if (!guestInfo.firstName || !guestInfo.lastName || !guestInfo.email || !guestInfo.phone) {
+      showError('Validation Error', 'Please fill in all guest information');
+      return;
+    }
     const bookingData: any = {
       roomId: room.id,
       checkIn,
       checkOut,
       numberOfGuests,
-      hasPets
+      hasPets,
+      guestInfo,
+      createAccount
     };
-    
-    // Add guest info for unauthenticated users
-    if (!isAuthenticated) {
-      if (!guestInfo.firstName || !guestInfo.lastName || !guestInfo.email || !guestInfo.phone) {
-        showError('Validation Error', 'Please fill in all guest information');
-        return;
-      }
-      bookingData.guestInfo = guestInfo;
-      bookingData.createAccount = createAccount;
-    }
     
     try {
       const response = await fetch('http://localhost:5000/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(isAuthenticated && { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` })
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
         },
         body: JSON.stringify(bookingData)
       });
@@ -228,7 +201,6 @@ export default function RoomDetail() {
         if (result.accountCreated) {
           sendAccountCreationEmail(
             result.accountCreated.email,
-            guestInfo.firstName,
             result.accountCreated.password
           ).catch(error => {
             console.error('Failed to send account creation email:', error);
@@ -342,7 +314,7 @@ export default function RoomDetail() {
                       <button
                         key={index}
                         onClick={() => setSelectedImageIndex(index)}
-                        className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
+                        className={`shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
                           selectedImageIndex === index ? 'border-blue-500' : 'border-gray-200'
                         }`}
                       >
@@ -515,26 +487,25 @@ export default function RoomDetail() {
                   )}
                 </div>
 
-                {/* Guest Information for Unauthenticated Users */}
-                {!isAuthenticated && (
-                  <div className="border-t pt-4 space-y-3">
-                    <h4 className="text-sm font-medium text-gray-900">Guest Information</h4>
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          First Name *
-                        </label>
-                        <input
-                          type="text"
-                          value={guestInfo.firstName}
-                          onChange={(e) => setGuestInfo({...guestInfo, firstName: e.target.value})}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Last Name *
+                {/* Guest Information */}
+                <div className="border-t pt-4 space-y-3">
+                  <h4 className="text-sm font-medium text-gray-900">Guest Information</h4>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        First Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={guestInfo.firstName}
+                        onChange={(e) => setGuestInfo({...guestInfo, firstName: e.target.value})}
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Last Name *
                         </label>
                         <input
                           type="text"
@@ -583,8 +554,7 @@ export default function RoomDetail() {
                       </label>
                     </div>
                   </div>
-                )}
-              </div>
+                </div>
               
               {/* Price Summary */}
               <div className="mt-6 p-4 bg-gray-50 rounded-lg">

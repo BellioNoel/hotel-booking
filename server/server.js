@@ -122,15 +122,14 @@ async function verifyCloudinary() {
       api_key: process.env.CLOUDINARY_API_KEY,
       api_secret: process.env.CLOUDINARY_API_SECRET
     });
-    
-    // Test Cloudinary connection by trying to access the API
+
     if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
       console.log('✅ Cloudinary configured successfully');
     } else {
       console.warn('⚠️  Cloudinary configuration incomplete - image uploads may not work');
     }
   } catch (error) {
-    console.error('❌ Cloudinary configuration error:', error);
+    console.error('❌ Cloudinary configuration error:', error.message || error);
     console.warn('⚠️  Image uploads will not be available');
   }
 }

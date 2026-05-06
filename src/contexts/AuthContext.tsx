@@ -262,7 +262,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const adminLogin = async (adminKey: string) => {
     dispatch({ type: 'AUTH_START' });
     try {
-      const response = await authAPI.adminLogin({ adminKey });
+      const response = await authAPI.adminLogin(adminKey);
       setAuthToken(response.token);
       dispatch({ type: 'AUTH_SUCCESS', payload: response.user });
       

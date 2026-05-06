@@ -1,7 +1,7 @@
 /**
  * Admin page: rooms CRUD and bookings management (tabs).
  */
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import AdminRooms from "../components/AdminRooms";
 import AdminBookings from "../components/AdminBookings";
 import AdminAboutEnvironment from "../components/AdminAboutEnvironment";
@@ -16,32 +16,6 @@ const tabs: { id: TabId; label: string }[] = [
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState<TabId>("rooms");
-
-  /**
-   * Cloudinary image upload handler
-   * Logic preserved exactly as provided
-   */
-  const handleImageUpload = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (!e.target.files?.[0]) return;
-
-      const formData = new FormData();
-      formData.append("file", e.target.files[0]);
-      formData.append("upload_preset", "hotel_uploads");
-
-      const res = await fetch(
-        "https://api.cloudinary.com/v1_1/ddl2f55by/image/upload",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      const data = await res.json();
-      console.log("Uploaded URL:", data.secure_url);
-    },
-    []
-  );
 
   return (
     <main className="flex-1 sm:p-6 [padding:var(--spacing-page)]">
@@ -96,20 +70,7 @@ export default function Admin() {
           hidden={activeTab !== "about"}
           className="focus:outline-none"
         >
-          {activeTab === "about" && (
-            <>
-              <AdminAboutEnvironment />
-
-              {/* Image upload intentionally scoped to About / Environment */}
-              <div className="mt-6">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                />
-              </div>
-            </>
-          )}
+          {activeTab === "about" && <AdminAboutEnvironment />}
         </div>
       </div>
     </main>

@@ -7,13 +7,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import type { Room } from "../types";
 import Reviews from "./Reviews";
 import { roomsAPI, handleAPIRequest } from "../lib/api";
-import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 
 export default function RoomDetail() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
   const { showSuccess, showError, showInfo } = useToast();
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,13 +36,14 @@ export default function RoomDetail() {
   useEffect(() => {
     const fetchRoom = async () => {
       try {
-        const { data, error } = await handleAPIRequest(() => roomsAPI.getRoomById(roomId!));
+        const { data, error } = await handleAPIRequest(() => roomsAPI.getRoom(roomId!));
         if (error) {
           console.error('Error fetching room:', error);
           return;
         }
         if (data) {
-          setRoom(data);
+          const roomData = data.room || data;
+          setRoom(roomData);
         }
       } catch (error) {
         console.error('Error fetching room:', error);
@@ -61,8 +60,8 @@ export default function RoomDetail() {
   // Calculate total cost when dates change
   useEffect(() => {
     if (checkIn && checkOut && room) {
-      const checkInDate = new Date(checkIn);
-      const checkOutDate = new Date(checkOut);
+      const checkInDate = new Date(checkIn).getTime();
+      const checkOutDate = new Date(checkOut).getTime();
       const nightsCount = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
       
       if (nightsCount > 0) {
@@ -107,22 +106,20 @@ export default function RoomDetail() {
       hasPets
     };
     
-    // Add guest info for unauthenticated users
-    if (!isAuthenticated) {
-      if (!guestInfo.firstName || !guestInfo.lastName || !guestInfo.email || !guestInfo.phone) {
-        showError('Validation Error', 'Please fill in all guest information');
-        return;
-      }
-      bookingData.guestInfo = guestInfo;
-      bookingData.createAccount = createAccount;
+    // Add guest info
+    if (!guestInfo.firstName || !guestInfo.lastName || !guestInfo.email || !guestInfo.phone) {
+      showError('Validation Error', 'Please fill in all guest information');
+      return;
     }
+    bookingData.guestInfo = guestInfo;
+    bookingData.createAccount = createAccount;
     
     try {
       const response = await fetch('/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(isAuthenticated && { 'Authorization': `Bearer ${localStorage.getItem('token')}` })
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
         },
         body: JSON.stringify(bookingData)
       });
@@ -248,7 +245,7 @@ export default function RoomDetail() {
                       <button
                         key={index}
                         onClick={() => setSelectedImageIndex(index)}
-                        className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
+                        className={`shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
                           selectedImageIndex === index ? 'border-blue-500' : 'border-gray-200'
                         }`}
                       >
@@ -412,10 +409,9 @@ export default function RoomDetail() {
                   )}
                 </div>
 
-                {/* Guest Information for Unauthenticated Users */}
-                {!isAuthenticated && (
-                  <div className="border-t pt-4 space-y-3">
-                    <h4 className="text-sm font-medium text-gray-900">Guest Information</h4>
+                {/* Guest Information */}
+                <div className="border-t pt-4 space-y-3">
+                  <h4 className="text-sm font-medium text-gray-900">Guest Information</h4>
                     
                     <div className="grid grid-cols-2 gap-3">
                       <div>
@@ -480,8 +476,7 @@ export default function RoomDetail() {
                       </label>
                     </div>
                   </div>
-                )}
-              </div>
+                </div>
               
               {/* Price Summary */}
               <div className="mt-6 p-4 bg-gray-50 rounded-lg">

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { bookingsAPI, handleAPIRequest } from '../lib/api';
 import { useTempAuth } from '../hooks/useTempAuth';
-import { Calendar, Clock, MapPin, Users, DollarSign, Check, X, AlertCircle, RefreshCw } from 'lucide-react';
+import { Calendar, Clock, Users, DollarSign, Check, X, AlertCircle, RefreshCw } from 'lucide-react';
 
 interface Booking {
   _id: string;
@@ -219,23 +219,31 @@ export default function MyBookings() {
                   <div className="mb-4">
                     <h4 className="text-sm font-medium text-gray-900 mb-2">Rooms</h4>
                     <div className="space-y-2">
-                      {booking.rooms.map((room, index) => (
-                        <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                          {room.room?.images?.[0] && (
-                            <img
-                              src={room.room.images[0].url}
-                              alt={room.roomName}
-                              className="w-12 h-12 rounded-lg object-cover"
-                            />
-                          )}
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900">{room.roomName}</p>
-                            <p className="text-xs text-gray-500">
-                              FCFA {room.roomPrice.toLocaleString()} per night
-                            </p>
+                      {booking.rooms.map((room, index) => {
+                        const roomObj = typeof room.room === 'object' ? room.room : null;
+                        let imageUrl: string | null = null;
+                        if (roomObj?.images?.[0]) {
+                          const img = roomObj.images[0] as any;
+                          imageUrl = typeof img === 'string' ? img : (img?.url || null);
+                        }
+                        return (
+                          <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                            {imageUrl && (
+                              <img
+                                src={imageUrl}
+                                alt={room.roomName}
+                                className="w-12 h-12 rounded-lg object-cover"
+                              />
+                            )}
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-gray-900">{room.roomName}</p>
+                              <p className="text-xs text-gray-500">
+                                FCFA {room.roomPrice.toLocaleString()} per night
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
 

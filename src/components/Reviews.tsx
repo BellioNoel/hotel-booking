@@ -129,11 +129,13 @@ export default function Reviews({ roomId, roomRating }: ReviewsProps) {
   };
 
   const renderRatingDistribution = () => {
+    if (!roomRating) return null;
+    
     return (
       <div className="space-y-2">
         {[5, 4, 3, 2, 1].map((star) => {
-          const count = roomRating?.distribution?.[star as keyof typeof roomRating.distribution] || 0;
-          const percentage = roomRating?.count > 0 ? (count / roomRating.count) * 100 : 0;
+          const count = roomRating.distribution?.[star as keyof typeof roomRating.distribution] || 0;
+          const percentage = (roomRating.count ?? 0) > 0 ? (count / (roomRating.count ?? 1)) * 100 : 0;
           return (
             <div key={star} className="flex items-center gap-2">
               <span className="text-sm text-gray-600 w-8">{star}★</span>

@@ -1,17 +1,13 @@
 /**
  * src/components/AdminRooms.tsx
  * Admin rooms: list, add, edit, delete.
- * Images stored as URLs (Cloudinary).
+ * Images stored as URLs (Cloudinary via backend upload API).
  */
 import { useState, useEffect, useCallback } from "react";
 import type { Room } from "../types";
 import { roomsAPI, uploadAPI, handleAPIRequest } from "../lib/api";
 
-/* =========================
-   Cloudinary config (INLINE)
-   ========================= */
-
-/** Upload multiple images to Cloudinary via API */
+/** Upload multiple images via backend API */
 async function uploadImages(files: FileList | null): Promise<Array<{ url: string; publicId: string }>> {
   if (!files?.length) return [];
   
@@ -28,8 +24,8 @@ const emptyRoomForm = {
   name: "",
   price: "",
   description: "",
-  roomType: "standard" as const,
-  bedType: "double" as const,
+  roomType: "standard",
+  bedType: "double",
   capacity: 2,
   size: "",
   petFriendly: false,
@@ -144,7 +140,7 @@ export default function AdminRooms() {
     let images = [...form.images];
 
     if (imageFiles?.length) {
-      console.log("[Rooms] Uploading images to Cloudinary…");
+      console.log("[Rooms] Uploading images via backend upload API…");
       const uploaded = await uploadImages(imageFiles);
       images = [...images, ...uploaded];
     }

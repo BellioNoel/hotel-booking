@@ -1,10 +1,7 @@
 //src/pages/AboutEnvironment.tsx
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../lib/firebase";
-
-const ABOUT_DOC_REF = doc(db, "config", "aboutPage");
+import { configAPI } from "../lib/api";
 
 interface AboutCard {
   id: string;
@@ -24,23 +21,24 @@ export default function AboutPage() {
   useEffect(() => {
     (async () => {
       try {
-        const snap = await getDoc(ABOUT_DOC_REF);
-        if (snap.exists()) {
-          setData(snap.data() as AboutPageData);
+        const aboutData = await configAPI.getAboutPage();
+        if (aboutData) {
+          setData(aboutData as AboutPageData);
+          return;
         }
       } catch (error) {
-        console.warn('Firebase not configured or permission denied:', error);
-        // Set default data when Firebase is not available
-        setData({
-          hero: {
-            id: '1',
-            title: 'About Our Hotel',
-            description: 'Experience luxury and comfort at our beautiful hotel.',
-            image: '/api/placeholder/800/400'
-          },
-          cards: []
-        });
+        console.warn('Failed to load about page from backend config API:', error);
       }
+
+      setData({
+        hero: {
+          id: '1',
+          title: 'About Our Hotel',
+          description: 'Experience luxury and comfort at our beautiful hotel.',
+          image: '/api/placeholder/800/400'
+        },
+        cards: []
+      });
     })();
   }, []);
 

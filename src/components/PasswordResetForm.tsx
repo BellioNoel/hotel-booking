@@ -3,11 +3,10 @@ import { useState } from 'react';
 import { authAPI, handleAPIRequest } from '../lib/api';
 
 interface PasswordResetFormProps {
-  onClose?: () => void;
   onSwitchToLogin?: () => void;
 }
 
-export default function PasswordResetForm({ onClose, onSwitchToLogin }: PasswordResetFormProps) {
+export default function PasswordResetForm({ onSwitchToLogin }: PasswordResetFormProps) {
   const [step, setStep] = useState<'email' | 'code' | 'reset'>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');

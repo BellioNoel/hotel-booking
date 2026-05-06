@@ -1,61 +1,36 @@
 /** src/types/index.ts
  * Shared domain types for the hotel booking app.
- * Single source of truth for storage, API, and UI.
+ * Single source of truth – aligned with MongoDB models.
  */
 
-/** Unique id for a room (generated, e.g. nanoid or crypto). */
+/** Unique id for a room / booking (MongoDB ObjectId string). */
 export type RoomId = string;
-
-/** Unique id for a booking. */
 export type BookingId = string;
-
-/** Admin secret key stored in session/local storage; used to gate admin routes. */
 export type AdminKey = string;
 
-/**
- * Room entity: name, price, description, images.
- * Images are stored as URLs (Cloudinary), not base64.
- */
+/** Room entity – mirrors the MongoDB Room schema. */
 export interface Room {
-  id: RoomId;
+  _id: string;
+  id: string;
   name: string;
   price: number;
   description: string;
-
-  /**
-   * Image objects for display and storage.
-   * Currently backed by Cloudinary secure URLs with public IDs.
-   */
   images: Array<{
     url: string;
     publicId: string;
     alt?: string;
     description?: string;
   }>;
-
-  /** Dynamic criteria for room features */
   criteria: Array<{
     name: string;
     description: string;
   }>;
-
-  /** Rating system */
   rating: {
     average: number;
     count: number;
-    distribution: {
-      1: number;
-      2: number;
-      3: number;
-      4: number;
-      5: number;
-    };
+    distribution: { 1: number; 2: number; 3: number; 4: number; 5: number };
   };
-
-  /** Pet friendly status */
   petFriendly: boolean;
-
-  /** Room details */
   roomType: string;
   bedType: string;
   capacity: number;
@@ -63,17 +38,18 @@ export interface Room {
   maxGuests?: number;
   amenities?: string[];
   available?: boolean;
+  isAvailable?: boolean;
   roomNumber?: string;
+  floor?: number;
+  view?: string;
+  smokingAllowed?: boolean;
 }
 
 /** Review interface */
 export interface Review {
   id: string;
-  user?: {
-    id: string;
-    name: string;
-    email: string;
-  };
+  _id?: string;
+  user?: { id: string; name: string; email: string };
   room: string;
   rating: number;
   comment?: string;
@@ -84,43 +60,51 @@ export interface Review {
   updatedAt: string;
 }
 
-/** Status of a booking after admin action. */
-export type BookingStatus = "pending" | "accepted" | "rejected";
+/** Status of a booking – matches server enum. */
+export type BookingStatus = "pending" | "confirmed" | "cancelled" | "completed" | "no-show";
 
-/** Booking entity: single room, guest info, date range, status. */
+/** Populated room reference inside a booking. */
+export interface BookingRoom {
+  room: string | Room;
+  roomName: string;
+  roomPrice: number;
+}
+
+/** Booking entity – mirrors the MongoDB Booking schema. */
 export interface Booking {
+  _id?: string;
   id: BookingId;
-
-  /** Room included in this booking. */
-  room: string;
-
-  /** Date range for the booking. */
+  bookingNumber?: string;
+  user?: {
+    _id: string;
+    id: string;
+    name: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+    phone?: string;
+  };
+  rooms?: BookingRoom[];
+  room?: string | Room;
   checkIn: string;
   checkOut: string;
-
-  /** Guest information. */
+  nights?: number;
   guestInfo: {
     firstName: string;
     lastName: string;
     email: string;
     phone: string;
+    specialRequests?: string;
   };
-
-  /** Number of guests. */
-  numberOfGuests: number;
-
-  /** Pet information. */
-  hasPets: boolean;
-
-  /** Total cost. */
-  totalCost: number;
-
-  /** Current status. */
+  numberOfGuests: { adults: number; children?: number } | number;
+  hasPets?: boolean;
+  totalPrice?: number;
+  totalCost?: number;
   status: BookingStatus;
-
-  /** When the booking was created. */
+  paymentStatus?: string;
+  paymentMethod?: string;
+  specialRequests?: string;
+  notes?: string;
   createdAt: string;
-
-  /** When the booking was last updated. */
   updatedAt: string;
 }

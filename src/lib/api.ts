@@ -354,11 +354,11 @@ export const uploadAPI = {
     return response.json();
   },
 
-  deleteImage: (publicId: string) => apiRequest(`/upload/image/${publicId}`, {
+  deleteImage: (publicId: string) => apiRequest(`/upload/image/${encodeURIComponent(publicId)}`, {
     method: 'DELETE',
   }),
 
-  getImageInfo: (publicId: string) => apiRequest(`/upload/image/${publicId}`),
+  getImageInfo: (publicId: string) => apiRequest(`/upload/image/${encodeURIComponent(publicId)}`),
 };
 
 // Config API
