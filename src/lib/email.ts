@@ -1,34 +1,131 @@
 //src/lib/email.ts
-import emailjs from "emailjs-com";
 import type { Booking } from "../types";
 
 export type SendEmailResult =
   | { success: true }
   | { success: false; error: string };
 
-function getConfig() {
-  const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-  const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-  const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
-
-  if (!publicKey || !serviceId || !templateId) {
-    return null;
+export async function sendBookingReceiptEmail(
+  booking: any,
+  roomName: string,
+  totalCost: number,
+  nights: number
+): Promise<SendEmailResult> {
+  const email = booking.guestInfo?.email?.trim();
+  if (!email || !email.includes("@")) {
+    return { success: false, error: "Guest email is missing or invalid" };
   }
 
-  return {
-    publicKey: publicKey.trim(),
-    serviceId: serviceId.trim(),
-    templateId: templateId.trim(),
+  const checkInDate = new Date(booking.checkIn).toLocaleDateString();
+  const checkOutDate = new Date(booking.checkOut).toLocaleDateString();
+  const formattedCost = new Intl.NumberFormat("fr-CM", {
+    style: "currency",
+    currency: "XAF",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(totalCost);
+
+  const emailData = {
+    to: email,
+    subject: "Booking Receipt - Franco Hotel",
+    template: "booking-receipt",
+    data: {
+      guestName: `${booking.guestInfo.firstName} ${booking.guestInfo.lastName}`,
+      guestEmail: booking.guestInfo.email,
+      roomName,
+      roomType: booking.rooms?.[0]?.room?.type || 'Standard Room',
+      bedType: booking.rooms?.[0]?.room?.bedType || 'Queen Bed',
+      capacity: booking.rooms?.[0]?.room?.capacity || 2,
+      hasPets: booking.hasPets || false,
+      numberOfGuests: booking.numberOfGuests?.adults || 2,
+      roomNumber: booking.rooms?.[0]?.room?.roomNumber || 'TBA',
+      roomSize: booking.rooms?.[0]?.room?.size || '25 sqm',
+      roomImage: booking.rooms?.[0]?.room?.images?.[0] || null,
+      roomPrice: booking.rooms?.[0]?.roomPrice ? 
+        new Intl.NumberFormat("fr-CM", {
+          style: "currency",
+          currency: "XAF",
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(booking.rooms[0].roomPrice) : 'TBA',
+      checkIn: checkInDate,
+      checkOut: checkOutDate,
+      nights,
+      totalCost: formattedCost,
+      bookingId: booking.id
+    }
   };
+
+  try {
+    const response = await fetch('http://localhost:5000/api/email/send-booking-receipt', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(emailData)
+    });
+
+    if (response.ok) {
+      return { success: true };
+    } else {
+      let errorMessage = "Failed to send booking receipt email";
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch (jsonError) {
+        errorMessage = `HTTP ${response.status}: ${response.statusText || errorMessage}`;
+      }
+      return { success: false, error: errorMessage };
+    }
+  } catch (error) {
+    console.error("Failed to send booking receipt email:", error);
+    return { success: false, error: "Failed to send booking receipt email" };
+  }
 }
 
-function initEmailJS(publicKey: string): boolean {
+export async function sendAccountCreationEmail(
+  email: string,
+  tempPassword: string
+): Promise<SendEmailResult> {
+  if (!email || !email.includes("@")) {
+    return { success: false, error: "Email is missing or invalid" };
+  }
+
+  const emailData = {
+    to: email,
+    subject: "Account Created - Franco Hotel",
+    template: "account-creation",
+    data: {
+      email,
+      tempPassword,
+      loginUrl: `${window.location.origin}/login`
+    }
+  };
+
   try {
-    emailjs.init(publicKey);
-    return true;
-  } catch {
-    console.error("EmailJS failed to initialize");
-    return false;
+    const response = await fetch('http://localhost:5000/api/email/send-account-creation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(emailData)
+    });
+
+    if (response.ok) {
+      return { success: true };
+    } else {
+      let errorMessage = "Failed to send account creation email";
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch (jsonError) {
+        errorMessage = `HTTP ${response.status}: ${response.statusText || errorMessage}`;
+      }
+      return { success: false, error: errorMessage };
+    }
+  } catch (error) {
+    console.error("Failed to send account creation email:", error);
+    return { success: false, error: "Failed to send account creation email" };
   }
 }
 
@@ -38,46 +135,100 @@ export async function sendBookingStatusEmail(
   subject: string,
   body: string
 ): Promise<SendEmailResult> {
-  const config = getConfig();
-  if (!config) {
-    return { success: false, error: "Email service is not configured" };
-  }
-
-  if (!initEmailJS(config.publicKey)) {
-    return { success: false, error: "Email service initialization failed" };
-  }
-
-  const email = booking.guestEmail?.trim();
+  const email = booking.guestInfo?.email?.trim();
   if (!email || !email.includes("@")) {
     return { success: false, error: "Guest email is missing or invalid" };
   }
 
-  const templateParams = {
-    email,
-    guest_name: booking.guestName || "Guest",
-    subject: subject || "Booking update",
-    message: body || "",
-    check_in: booking.checkIn || "-",
-    check_out: booking.checkOut || "-",
+  const guestName = booking.guestInfo ? 
+    `${booking.guestInfo.firstName} ${booking.guestInfo.lastName}` : 
+    "Guest";
+
+  const emailData = {
+    to: email,
+    subject,
+    template: "booking-status",
+    data: {
+      guestName,
+      status: _status,
+      message: body,
+      checkIn: new Date(booking.checkIn).toLocaleDateString(),
+      checkOut: new Date(booking.checkOut).toLocaleDateString(),
+      bookingId: booking.id
+    }
   };
 
   try {
-    await emailjs.send(
-      config.serviceId,
-      config.templateId,
-      templateParams,
-      config.publicKey
-    );
+    const response = await fetch('http://localhost:5000/api/email/send-booking-status', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(emailData)
+    });
 
-    console.info("Email sent successfully");
-    return { success: true };
-  } catch (err: any) {
-    const message =
-      err?.text ||
-      err?.message ||
-      "Email service rejected the request";
+    if (response.ok) {
+      return { success: true };
+    } else {
+      let errorMessage = "Failed to send booking status email";
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch (jsonError) {
+        errorMessage = `HTTP ${response.status}: ${response.statusText || errorMessage}`;
+      }
+      return { success: false, error: errorMessage };
+    }
+  } catch (error) {
+    console.error("Failed to send booking status email:", error);
+    return { success: false, error: "Failed to send booking status email" };
+  }
+}
 
-    console.error("Email send failed:", message);
-    return { success: false, error: message };
+export async function sendPasswordResetEmail(
+  email: string,
+  resetToken: string
+): Promise<SendEmailResult> {
+  if (!email || !email.includes("@")) {
+    return { success: false, error: "Email is missing or invalid" };
+  }
+
+  const resetUrl = `${window.location.origin}/reset-password?token=${resetToken}`;
+
+  const emailData = {
+    to: email,
+    subject: "Password Reset - Franco Hotel",
+    template: "password-reset",
+    data: {
+      email,
+      resetUrl,
+      resetToken
+    }
+  };
+
+  try {
+    const response = await fetch('http://localhost:5000/api/email/send-password-reset', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(emailData)
+    });
+
+    if (response.ok) {
+      return { success: true };
+    } else {
+      let errorMessage = "Failed to send password reset email";
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch (jsonError) {
+        errorMessage = `HTTP ${response.status}: ${response.statusText || errorMessage}`;
+      }
+      return { success: false, error: errorMessage };
+    }
+  } catch (error) {
+    console.error("Failed to send password reset email:", error);
+    return { success: false, error: "Failed to send password reset email" };
   }
 }

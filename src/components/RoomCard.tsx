@@ -3,6 +3,7 @@
  * Production-ready, accessible, theme-aware.
  */
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { Room } from "../types";
 
 export interface RoomCardProps {
@@ -13,8 +14,31 @@ export interface RoomCardProps {
 }
 
 export default function RoomCard({ room, onBook, compact = false }: RoomCardProps) {
-  const imageUrl = room.images[0] ?? null;
+  const navigate = useNavigate();
+  const imageUrl = room.images[0]?.url ?? null;
   const [expanded, setExpanded] = useState(false);
+
+  // Rating display component
+  const RatingStars = ({ rating, count }: { rating: number; count: number }) => {
+    return (
+      <div className="flex items-center gap-1">
+        <div className="flex">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <svg
+              key={star}
+              className={`w-4 h-4 ${
+                star <= rating ? 'text-yellow-400 fill-current' : 'text-gray-300 fill-current'
+              }`}
+              viewBox="0 0 20 20"
+            >
+              <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+            </svg>
+          ))}
+        </div>
+        <span className="text-xs text-gray-600">({count})</span>
+      </div>
+    );
+  };
 
   const priceFormatted = new Intl.NumberFormat("fr-CM", {
     style: "currency",
@@ -27,8 +51,9 @@ export default function RoomCard({ room, onBook, compact = false }: RoomCardProp
 
   return (
     <article
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm transition-all duration-300 hover:shadow-lg hover:border-gray-300/80"
+      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm transition-all duration-300 hover:shadow-lg hover:border-gray-300/80 cursor-pointer"
       aria-labelledby={`room-name-${room.id}`}
+      onClick={() => navigate(`/rooms/${room.id}`)}
     >
       {/* Image */}
       <div className="relative aspect-4/3 w-full overflow-hidden bg-gray-100">
@@ -60,6 +85,11 @@ export default function RoomCard({ room, onBook, compact = false }: RoomCardProp
         >
           {room.name}
         </h2>
+
+        {/* Rating */}
+        <div className="mt-1">
+          <RatingStars rating={room.rating?.average || 0} count={room.rating?.count || 0} />
+        </div>
 
         {/* Description container (fixed visual height) */}
         <div className="mt-2">

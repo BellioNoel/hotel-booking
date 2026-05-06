@@ -1,11 +1,10 @@
 // src/components/BookingForm.tsx
 import { useState, useId, useEffect, useMemo, useCallback } from "react";
 import type { Room, RoomId } from "../types";
-import {
-  saveBooking,
-  generateId,
-  getRoomById,
-} from "../lib/firestoreStorage";
+import { bookingsAPI, roomsAPI, handleAPIRequest } from "../lib/api";
+import { useAuth } from "../contexts/AuthContext";
+import { useToast } from "../contexts/ToastContext";
+import GeneratedPasswordDisplay from "./GeneratedPasswordDisplay";
 
 export interface BookingFormProps {
   roomIds: RoomId[];
@@ -24,6 +23,9 @@ export default function BookingForm({
   onSuccess,
   onCancel,
 }: BookingFormProps) {
+  const { user, isAuthenticated, register } = useAuth();
+  const toast = useToast();
+  
   const [checkIn, setCheckIn] = useState(todayISO());
   const [checkOut, setCheckOut] = useState("");
   const [guestName, setGuestName] = useState("");
@@ -31,6 +33,10 @@ export default function BookingForm({
   const [guestEmail, setGuestEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  
+  // Create account functionality
+  const [createAccount, setCreateAccount] = useState(false);
+  const [generatedPassword, setGeneratedPassword] = useState("");
 
   const [selectedIds, setSelectedIds] = useState<RoomId[]>(roomIds);
   const [effectiveRooms, setEffectiveRooms] = useState<Room[]>([]);
@@ -40,19 +46,29 @@ export default function BookingForm({
     setSelectedIds(roomIds);
   }, [roomIds]);
 
-  // 🔥 Resolve rooms from Firestore (async-safe)
+  // 🔥 Resolve rooms from API (async-safe)
   useEffect(() => {
     let active = true;
 
     async function resolveRooms() {
       setLoadingRooms(true);
       try {
+        // Filter out undefined IDs before making API calls
+        const validIds = selectedIds.filter(id => id && id !== 'undefined');
+        if (validIds.length === 0) {
+          if (active) {
+            setEffectiveRooms([]);
+            setLoadingRooms(false);
+          }
+          return;
+        }
+
         const rooms = await Promise.all(
-          selectedIds.map((id) => getRoomById(id))
+          validIds.map((id) => roomsAPI.getRoom(id))
         );
         if (active) {
           setEffectiveRooms(
-            rooms.filter((r): r is Room => r !== null)
+            rooms.map(r => r.room).filter((r): r is Room => r !== null)
           );
         }
       } catch {
@@ -117,6 +133,12 @@ export default function BookingForm({
     if (!guestPhone.trim()) return "Please enter your phone number.";
     if (selectedIds.length === 0) return "Please select at least one room.";
     if (nights <= 0) return "Invalid stay duration.";
+    
+    // Validate account creation fields
+    if (createAccount) {
+      if (!generatedPassword.trim()) return "Please generate a password for your account.";
+    }
+    
     return null;
   }
 
@@ -132,22 +154,44 @@ export default function BookingForm({
 
     setSubmitting(true);
     try {
-      await saveBooking({
-        id: generateId(),
+      // Create account if requested and user is not authenticated
+      if (createAccount && !isAuthenticated) {
+        const nameParts = guestName.trim().split(' ');
+        await register({
+          firstName: nameParts[0] || guestName.trim(),
+          lastName: nameParts.slice(1).join(' ') || 'User',
+          email: guestEmail.trim(),
+          password: generatedPassword,
+          phone: guestPhone.trim(),
+        });
+        toast.showSuccess(
+          'Account Created!', 
+          `Your account has been created. Password: ${generatedPassword}. Please save it securely and update it after login.`
+        );
+      }
+
+      // Create booking
+      await bookingsAPI.createBooking({
         roomIds: selectedIds,
-        guestName: guestName.trim(),
-        guestPhone: guestPhone.trim(),
-        guestEmail: guestEmail.trim(),
         checkIn,
         checkOut,
-        status: "pending",
-        createdAt: new Date().toISOString(),
-        totalPrice,
+        guestInfo: {
+          firstName: guestName.trim().split(' ')[0] || guestName.trim(),
+          lastName: guestName.trim().split(' ').slice(1).join(' ') || 'User',
+          email: guestEmail.trim(),
+          phone: guestPhone.trim(),
+        },
+        numberOfGuests: {
+          adults: 1, // Default to 1 adult, can be enhanced later
+          children: 0,
+        },
+        notes: `Total price: FCFA ${totalPrice.toLocaleString()}`,
       });
 
+      toast.showSuccess('Booking Confirmed!', 'Your booking has been submitted successfully.');
       onSuccess();
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -244,6 +288,36 @@ export default function BookingForm({
         placeholder="Phone"
         required
       />
+
+      {/* Create Account Section - Only show if user is not authenticated */}
+      {!isAuthenticated && (
+        <div className="rounded-lg border border-gray-200 p-4">
+          <label className="flex items-start space-x-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={createAccount}
+              onChange={(e) => setCreateAccount(e.target.checked)}
+              className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <div className="flex-1">
+              <span className="text-sm font-medium text-gray-900">
+                Create an account with my information
+              </span>
+              <p className="text-xs text-gray-500 mt-1">
+                Save your details for faster bookings and access your booking history
+              </p>
+            </div>
+          </label>
+
+          {createAccount && (
+            <div className="mt-4">
+              <GeneratedPasswordDisplay 
+                onPasswordGenerated={setGeneratedPassword}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Total */}
       {nights > 0 && effectiveRooms.length > 0 && (

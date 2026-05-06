@@ -108,4 +108,5 @@ import React, {
     }
     return ctx;
   }
-  
+
+  export { LoaderContext };

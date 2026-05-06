@@ -23,40 +23,104 @@ export interface Room {
   description: string;
 
   /**
-   * Image URLs for display and storage.
-   * Currently backed by Cloudinary secure URLs.
+   * Image objects for display and storage.
+   * Currently backed by Cloudinary secure URLs with public IDs.
    */
-  images: string[];
+  images: Array<{
+    url: string;
+    publicId: string;
+    alt?: string;
+    description?: string;
+  }>;
+
+  /** Dynamic criteria for room features */
+  criteria: Array<{
+    name: string;
+    description: string;
+  }>;
+
+  /** Rating system */
+  rating: {
+    average: number;
+    count: number;
+    distribution: {
+      1: number;
+      2: number;
+      3: number;
+      4: number;
+      5: number;
+    };
+  };
+
+  /** Pet friendly status */
+  petFriendly: boolean;
+
+  /** Room details */
+  roomType: string;
+  bedType: string;
+  capacity: number;
+  size: string;
+  maxGuests?: number;
+  amenities?: string[];
+  available?: boolean;
+  roomNumber?: string;
+}
+
+/** Review interface */
+export interface Review {
+  id: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  room: string;
+  rating: number;
+  comment?: string;
+  isRegisteredUser: boolean;
+  guestName?: string;
+  guestEmail?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 /** Status of a booking after admin action. */
 export type BookingStatus = "pending" | "accepted" | "rejected";
 
-/** Booking entity: one or more rooms, guest info, date range, status. */
+/** Booking entity: single room, guest info, date range, status. */
 export interface Booking {
   id: BookingId;
 
-  /** Room ids included in this booking. */
-  roomIds: RoomId[];
+  /** Room included in this booking. */
+  room: string;
 
-  guestName: string;
-  guestPhone: string;
-  guestEmail: string;
+  /** Date range for the booking. */
+  checkIn: string;
+  checkOut: string;
 
-  checkIn: string;   // ISO date string
-  checkOut: string;  // ISO date string
+  /** Guest information. */
+  guestInfo: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+  };
 
+  /** Number of guests. */
+  numberOfGuests: number;
+
+  /** Pet information. */
+  hasPets: boolean;
+
+  /** Total cost. */
+  totalCost: number;
+
+  /** Current status. */
   status: BookingStatus;
 
-  /**
-   * Cached total price for the booking.
-   * Used by admin views, emails, and Firestore.
-   */
-  totalPrice: number;
-
-  /** ISO date string when the booking was created. */
+  /** When the booking was created. */
   createdAt: string;
 
-  /** Optional audit field (safe for Firestore updates). */
-  updatedAt?: string;
+  /** When the booking was last updated. */
+  updatedAt: string;
 }

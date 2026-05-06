@@ -1,16 +1,17 @@
 {
   "name": "hotel-booking",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "server": "cd server && npm install && npm run dev",
+    "start": "npm run server"
   },
   "dependencies": {
-    "emailjs-com": "^3.2.0",
     "firebase": "^12.8.0",
     "framer-motion": "^12.29.2",
     "lucide-react": "^0.563.0",

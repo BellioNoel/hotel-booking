@@ -3,10 +3,11 @@
  * Compact hero with single-slot animated slogan.
  */
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { getRooms } from "../lib/firestoreStorage";
+import { roomsAPI, handleAPIRequest } from "../lib/api";
 import type { Room, RoomId } from "../types";
 import RoomCard from "../components/RoomCard";
 import BookingForm from "../components/BookingForm";
+import { Search, Filter } from "lucide-react";
 
 /* ---------------- MODAL OVERLAY ---------------- */
 function BookingModalOverlay({
@@ -46,9 +47,14 @@ function BookingModalOverlay({
 /* ---------------- MAIN PAGE ---------------- */
 export default function User() {
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [bookingRoomIds, setBookingRoomIds] = useState<RoomId[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedType, setSelectedType] = useState('');
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 200000 });
+  const [showFilters, setShowFilters] = useState(false);
 
   /* ---------- HERO CONTENT ---------- */
   const slogans = useMemo(
@@ -108,13 +114,43 @@ export default function User() {
 
   /* ---------- DATA ---------- */
   const loadRooms = useCallback(async () => {
-    const data = await getRooms();
-    setRooms(data);
+    const { data, error } = await handleAPIRequest(() => roomsAPI.getRooms());
+    if (data) {
+      setRooms(data.rooms);
+      setFilteredRooms(data.rooms);
+    } else if (error) {
+      console.error('Failed to load rooms:', error);
+    }
   }, []);
 
   useEffect(() => {
     loadRooms();
   }, [loadRooms]);
+
+  // Filter rooms when search or filters change
+  useEffect(() => {
+    let filtered = rooms;
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(room =>
+        room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        room.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Type filter
+    if (selectedType) {
+      filtered = filtered.filter(room => room.roomType === selectedType);
+    }
+
+    // Price filter
+    filtered = filtered.filter(room =>
+      room.price >= priceRange.min && room.price <= priceRange.max
+    );
+
+    setFilteredRooms(filtered);
+  }, [rooms, searchTerm, selectedType, priceRange]);
 
   /* ---------- ACTIONS ---------- */
   function handleBook(room: Room) {
@@ -167,17 +203,134 @@ export default function User() {
 
       {/* ROOMS */}
       <section className="mx-auto max-w-6xl px-4 py-8">
-        <h2 className="mb-4 text-xl sm:text-2xl font-semibold text-blue-900">
-          Our Rooms
-        </h2>
+        <div className="mb-6">
+          <h2 className="mb-4 text-xl sm:text-2xl font-semibold text-blue-900">
+            Our Rooms
+          </h2>
+          
+          {/* Search and Filters */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            {/* Search Bar */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search rooms by name or description..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Filter className="w-4 h-4" />
+                <span>Filters</span>
+                {(selectedType || priceRange.min > 0 || priceRange.max < 200000) && (
+                  <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                    Active
+                  </span>
+                )}
+              </button>
+            </div>
 
-        {rooms.length === 0 ? (
+            {/* Filter Options */}
+            {showFilters && (
+              <div className="border-t border-gray-200 pt-4 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Room Type Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Room Type
+                    </label>
+                    <select
+                      value={selectedType}
+                      onChange={(e) => setSelectedType(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">All Types</option>
+                      <option value="standard">Standard</option>
+                      <option value="deluxe">Deluxe</option>
+                      <option value="suite">Suite</option>
+                      <option value="family">Family</option>
+                    </select>
+                  </div>
+
+                  {/* Price Range Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Price Range (FCFA)
+                    </label>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="number"
+                        placeholder="Min"
+                        value={priceRange.min}
+                        onChange={(e) => setPriceRange({ ...priceRange, min: parseInt(e.target.value) || 0 })}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <span className="text-gray-500">-</span>
+                      <input
+                        type="number"
+                        placeholder="Max"
+                        value={priceRange.max}
+                        onChange={(e) => setPriceRange({ ...priceRange, max: parseInt(e.target.value) || 200000 })}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Clear Filters */}
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => {
+                      setSearchTerm('');
+                      setSelectedType('');
+                      setPriceRange({ min: 0, max: 200000 });
+                    }}
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    Clear all filters
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Results Count */}
+        {searchTerm || selectedType || priceRange.min > 0 || priceRange.max < 200000 ? (
+          <div className="mb-4 text-sm text-gray-600">
+            Showing {filteredRooms.length} of {rooms.length} rooms
+          </div>
+        ) : null}
+
+        {/* Rooms Grid */}
+        {filteredRooms.length === 0 ? (
           <div className="rounded-xl border-2 border-dashed border-blue-200 py-12 text-center">
-            <p className="text-blue-600">No rooms available yet.</p>
+            <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <p className="text-blue-600">
+              {rooms.length === 0 ? 'No rooms available yet.' : 'No rooms match your search criteria.'}
+            </p>
+            {(searchTerm || selectedType || priceRange.min > 0 || priceRange.max < 200000) && (
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedType('');
+                  setPriceRange({ min: 0, max: 200000 });
+                }}
+                className="mt-3 text-blue-600 hover:text-blue-700 font-medium text-sm"
+              >
+                Clear filters
+              </button>
+            )}
           </div>
         ) : (
           <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {rooms.map((room, i) => (
+            {filteredRooms.map((room, i) => (
               <li
                 key={room.id}
                 className="rounded-2xl border border-blue-100 bg-white shadow-sm transition-transform hover:scale-[1.02]"

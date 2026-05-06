@@ -23,9 +23,23 @@ export default function AboutPage() {
 
   useEffect(() => {
     (async () => {
-      const snap = await getDoc(ABOUT_DOC_REF);
-      if (snap.exists()) {
-        setData(snap.data() as AboutPageData);
+      try {
+        const snap = await getDoc(ABOUT_DOC_REF);
+        if (snap.exists()) {
+          setData(snap.data() as AboutPageData);
+        }
+      } catch (error) {
+        console.warn('Firebase not configured or permission denied:', error);
+        // Set default data when Firebase is not available
+        setData({
+          hero: {
+            id: '1',
+            title: 'About Our Hotel',
+            description: 'Experience luxury and comfort at our beautiful hotel.',
+            image: '/api/placeholder/800/400'
+          },
+          cards: []
+        });
       }
     })();
   }, []);
