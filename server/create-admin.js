@@ -1,64 +1,60 @@
-// One-time script to create admin user
+// One-time script to create or update the primary admin user
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import bcrypt from 'bcryptjs';
+import User from './models/User.js';
 
-dotenv.config();
+dotenv.config({ path: '.env' });
 
-async function createAdmin() {
+const ADMIN_USER = {
+  firstName: 'ADMIN',
+  lastName: 'HOTEL',
+  email: 'noeltebei478@gmail.com',
+  phone: '678507737',
+  password: 'BillionNoel1',
+  role: 'admin',
+  isActive: true,
+  emailVerified: true,
+};
+
+async function createOrUpdateAdmin() {
+  if (!process.env.MONGODB_URI) {
+    throw new Error('MONGODB_URI is missing in server/.env');
+  }
+
   try {
-    console.log('🔗 Connecting to MongoDB...');
+    console.log('Connecting to MongoDB...');
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ Connected to MongoDB');
+    console.log('Connected to MongoDB');
 
-    // Define User schema (simplified version for this script)
-    const userSchema = new mongoose.Schema({
-      firstName: { type: String, required: true },
-      lastName: { type: String, required: true },
-      email: { type: String, required: true, unique: true },
-      password: { type: String, required: true },
-      phone: { type: String, required: true },
-      role: { type: String, enum: ['user', 'admin'], default: 'user' },
-      isActive: { type: Boolean, default: true },
-    }, { timestamps: true });
+    const existing = await User.findOne({ email: ADMIN_USER.email.toLowerCase() });
 
-    const User = mongoose.model('User', userSchema);
+    if (existing) {
+      existing.firstName = ADMIN_USER.firstName;
+      existing.lastName = ADMIN_USER.lastName;
+      existing.phone = ADMIN_USER.phone;
+      existing.role = 'admin';
+      existing.isActive = true;
+      existing.emailVerified = true;
+      existing.password = ADMIN_USER.password;
+      await existing.save();
 
-    // Check if admin already exists
-    const existingAdmin = await User.findOne({ email: 'firstadmin@gmail.com' });
-    if (existingAdmin) {
-      console.log('⚠️  Admin user already exists');
-      await mongoose.connection.close();
+      console.log('Admin user updated successfully.');
+      console.log(`Email: ${ADMIN_USER.email}`);
       return;
     }
 
-    // Hash the password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash('56798TYTY', salt);
-
-    // Create admin user
-    const admin = new User({
-      firstName: 'FirstAdmin',
-      lastName: 'User',
-      email: 'firstadmin@gmail.com',
-      password: hashedPassword,
-      phone: '+237123456789',
-      role: 'admin',
-      isActive: true,
-    });
-
+    const admin = new User(ADMIN_USER);
     await admin.save();
-    console.log('✅ Admin user created successfully!');
-    console.log('📧 Email: firstadmin@gmail.com');
-    console.log('🔑 Password: 56798TYTY');
-    console.log('👤 Role: admin');
 
-  } catch (error) {
-    console.error('❌ Error creating admin user:', error.message);
+    console.log('Admin user created successfully.');
+    console.log(`Email: ${ADMIN_USER.email}`);
   } finally {
     await mongoose.connection.close();
-    console.log('🔌 MongoDB connection closed');
+    console.log('MongoDB connection closed');
   }
 }
 
-createAdmin();
+createOrUpdateAdmin().catch((error) => {
+  console.error('Failed to create/update admin user:', error.message || error);
+  process.exitCode = 1;
+});
